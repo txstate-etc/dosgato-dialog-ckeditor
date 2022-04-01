@@ -1,0 +1,43 @@
+{
+  "name": "@dosgato/dialog-ckeditor",
+  "description": "A form control that provides an instance of CKEditor. Designed to be compatible with @dosgato/dialog.",
+  "version": "0.0.1",
+  "scripts": {
+    "prepublishOnly": "echo \"Do not publish from the root. Run npm run package and publish the package directory.\"; exit 1;",
+    "dev": "svelte-kit dev",
+    "devck": "cp -R ~/Software/dosgato-ckeditor/build node_modules/@txstate-mws/dosgato-ckeditor && rm -rf node_modules/.vite && svelte-kit dev",
+    "package": "svelte-kit package",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
+    "lint": "eslint --ignore-path .gitignore ."
+  },
+  "dependencies": {
+    "@dosgato/ckeditor": "^1.0.0",
+    "@dosgato/dialog": "^0.0.3",
+    "@iconify-icons/mdi": "^1.2.6",
+    "@iconify/svelte": "^2.1.1",
+    "@txstate-mws/svelte-forms": "^0.0.14",
+    "svelte": "^3.46.6"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "next",
+    "@sveltejs/kit": "next",
+    "@types/ckeditor__ckeditor5-build-classic": "^29.0.1",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "eslint-plugin-svelte3": "^3.2.1",
+    "svelte": "^3.44.0",
+    "svelte-check": "^2.2.6",
+    "svelte-preprocess": "^4.9.4",
+    "svelte2tsx": "^0.4.14",
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.3"
+  },
+  "type": "module",
+  "author": "Nick Wing",
+  "license": "GPL-2.0-or-later",
+  "bugs": "https://github.com/txstate-etc/dosgato-dialog-ckeditor/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/txstate-etc/dosgato-dialog-ckeditor.git"
+  }
+}
