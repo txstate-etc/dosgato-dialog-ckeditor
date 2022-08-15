@@ -1,7 +1,7 @@
 {
   "name": "@dosgato/dialog-ckeditor",
   "description": "A form control that provides an instance of CKEditor. Designed to be compatible with @dosgato/dialog.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "prepublishOnly": "echo \"Do not publish from the root. Run npm run package and publish the package directory.\"; exit 1;",
     "dev": "svelte-kit dev",
@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "@dosgato/ckeditor": "^1.0.0",
-    "@dosgato/dialog": "^0.0.3",
+    "@dosgato/dialog": ">=0.0.3",
     "@iconify-icons/mdi": "^1.2.6",
     "@iconify/svelte": "^2.1.1",
-    "@txstate-mws/svelte-forms": "^0.0.14",
+    "@txstate-mws/svelte-forms": ">=0.0.14",
     "svelte": "^3.46.6"
   },
   "devDependencies": {
