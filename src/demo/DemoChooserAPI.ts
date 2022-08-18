@@ -1,4 +1,4 @@
-import type { AnyUIItem, Asset, ChooserType, Client, Folder, Page, Source } from '@txstate-mws/dosgato-dialog'
+import type { AnyUIItem, Asset, ChooserType, Client, Folder, Page, Source } from '@dosgato/dialog'
 import { filterAsync, randomid } from 'txstate-utils'
 
 interface RootFolder {

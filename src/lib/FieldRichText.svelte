@@ -111,6 +111,9 @@
   .dialog-rich-count.exceeded {
     color: #9a3332;
   }
+  .dialog-rich-ckeditor + :global(.ck-editor) {
+    overflow: hidden;
+  }
   .dialog-rich-ckeditor + :global(.ck-editor .ck-content) {
     min-height: 100px;
     max-height: 75vh;
