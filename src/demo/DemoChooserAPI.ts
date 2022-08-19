@@ -34,7 +34,7 @@ const assets: Record<string, RootFolder|RootPage> = {
             path: '/biology',
             acceptsUpload: false,
             children: [
-              { type: 'asset', id: 'asset-3', path: '/biology/evolutionary', name: 'missinglink.png', mime: 'image/png', bytes: 196672, url: '/static/demo-full.png', image: { width: 909, height: 1114, thumbnailUrl: '/static/demo-thumb.png' } }
+              { type: 'asset', id: 'asset-3', path: '/biology/evolutionary', name: 'missinglink.png', mime: 'image/png', bytes: 196672, url: '/demo-full.png', image: { width: 909, height: 1114, thumbnailUrl: '/demo-thumb.png' } }
             ]
           },
           { type: 'folder', id: 'folder-5', name: 'humananatomy', path: '/biology', acceptsUpload: false }
@@ -57,8 +57,8 @@ const assets: Record<string, RootFolder|RootPage> = {
         path: '/',
         acceptsUpload: true,
         children: [
-          { type: 'asset', id: 'asset-1', path: '/physics', name: 'cannondiagram.png', mime: 'image/png', bytes: 196672, url: '/static/demo-full.png', image: { width: 909, height: 1114, thumbnailUrl: '/static/demo-thumb.png' } },
-          { type: 'asset', id: 'asset-2', path: '/physics', name: 'modernphysics.pdf', mime: 'application/pdf', bytes: 1264, url: '/static/blankpdf.pdf' }
+          { type: 'asset', id: 'asset-1', path: '/physics', name: 'cannondiagram.png', mime: 'image/png', bytes: 196672, url: '/demo-full.png', image: { width: 909, height: 1114, thumbnailUrl: '/demo-thumb.png' } },
+          { type: 'asset', id: 'asset-2', path: '/physics', name: 'modernphysics.pdf', mime: 'application/pdf', bytes: 1264, url: '/blankpdf.pdf' }
         ]
       }
     ]
@@ -153,16 +153,16 @@ class DemoChooserAPI implements Client {
     return ret
   }
 
-  async getChildren (source: string, path: string, filter: (assetOrFolder: Asset | Folder) => boolean | Promise<boolean>) {
+  async getChildren (source: string, path: string) {
     const folder = this.findFolder(source, path)
-    return await filterAsync(folder.children as AnyItem[] ?? [], filter)
+    return folder.children as AnyItem[] ?? []
   }
 
-  async find (source: string, path: string, searchstring: string, filter: (item: AnyUIItem) => boolean | Promise<boolean>) {
+  async find (source: string, path: string, searchstring: string) {
     const folder = this.findFolder(source, path)
     const items = this.collectItems(folder)
     const search = searchstring.toLocaleLowerCase()
-    return await filterAsync(items.filter(a => a.name.toLocaleLowerCase().includes(search)), filter)
+    return items.filter(a => a.name.toLocaleLowerCase().includes(search))
   }
 
   async findById (id: string) {
@@ -187,12 +187,12 @@ class DemoChooserAPI implements Client {
     folder.children ??= []
     for (const file of Array.from(files)) {
       const isImage = file.type.startsWith('image')
-      const asset: Asset = { type: 'asset', id: randomid(), path, name: file.name, mime: isImage ? 'image/png' : 'application/pdf', bytes: isImage ? 196672 : 1264, url: isImage ? '/static/demo-full.png' : '/static/blankpdf.pdf' }
+      const asset: Asset = { type: 'asset', id: randomid(), path, name: file.name, mime: isImage ? 'image/png' : 'application/pdf', bytes: isImage ? 196672 : 1264, url: isImage ? '/demo-full.png' : '/blankpdf.pdf' }
       if (isImage) {
         asset.image = {
           width: 909,
           height: 1114,
-          thumbnailUrl: '/static/demo-thumb.png'
+          thumbnailUrl: '/demo-thumb.png'
         }
       }
       folder.children.push(asset)
