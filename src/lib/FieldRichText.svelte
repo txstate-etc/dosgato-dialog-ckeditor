@@ -3,8 +3,9 @@
   import { FORM_CONTEXT, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import type { EditorConfig } from '@ckeditor/ckeditor5-core/src/editor/editorconfig'
   import type ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
+  import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, FieldStandard, Icon, type Client, type AnyUIItem, type Folder } from '@dosgato/dialog'
   import { getContext, onMount, tick } from 'svelte'
-  import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, FieldStandard, Icon, type Client, type AnyUIItem, type UIFolder } from '@dosgato/dialog'
+  import { Cache } from 'txstate-utils'
 
   export let id: string | undefined = undefined
   export let path: string
@@ -35,10 +36,8 @@
           show('image')
         },
         browseLink: async (linkUrl, next: (linkUrl: string) => void) => {
-          if (chooserClient.findByUrl) {
-            const item = await chooserClient.findByUrl(linkUrl)
-            if (item) linkStore.preview(item)
-          }
+          const item = await findByUrlCache.get(linkUrl)
+          if (item) linkStore.setPreview(item)
           latestChooserCB = next
           show('link')
         }
@@ -47,6 +46,26 @@
     editor.model.document.on('change:data', () => formStore.setField(path, nullableDeserialize(editor.getData())))
     reactToValue()
   })
+
+  const findByUrlCache = new Cache(async (url: string) => {
+    return await chooserClient?.findByUrl?.(url)
+  })
+  async function finalize (data: string) {
+    testEl.innerHTML = data
+    const links = testEl.querySelectorAll('[href]')
+    const images = testEl.querySelectorAll('[src]')
+    await Promise.all([
+      ...Array.from(links).map(async link => {
+        const itm = await findByUrlCache.get(link.getAttribute('href')!)
+        if (itm) link.setAttribute('href', itm.id)
+      }),
+      ...Array.from(images).map(async image => {
+        const itm = await findByUrlCache.get(image.getAttribute('src')!)
+        if (itm) image.setAttribute('src', itm.id)
+      })
+    ])
+    return testEl.innerHTML
+  }
 
   let modaltoshow: 'link'|'image'|undefined = undefined
   let saveselection
@@ -65,7 +84,7 @@
     }
   }
   async function chooserComplete (e: any) {
-    const item: Exclude<AnyUIItem, UIFolder> = e.detail
+    const item: Exclude<AnyUIItem, Folder> = e.detail
     modaltoshow = undefined
     await tick()
     await tick()
@@ -82,10 +101,10 @@
     if (editor && editor.getData() !== serialized) editor.setData(serialized)
   }
   $: reactToValue($value)
-  $: exceeded = maxlength > 0 && charlength > maxlength
+  $: exceeded = maxlength && maxlength > 0 && charlength > maxlength
 </script>
 
-<FieldStandard bind:id {label} {path} {required} {conditional} let:id let:onBlur>
+<FieldStandard bind:id {label} {path} {required} {conditional} {finalize} let:id let:onBlur>
   <div {id} class="dialog-rich-ckeditor" bind:this={element}></div>
   {#if maxlength}
     <div class="dialog-rich-charcount">
