@@ -15,6 +15,7 @@
   }
 
   async function validate (data): Promise<Feedback[]> {
+    console.log(data)
     return [{
       type: 'error',
       message: 'Nope',
@@ -23,7 +24,7 @@
   }
 
   onMount(() => {
-    store.setField('richtext', 'hello')
+    store.setField('richtext', '<p><a href="page-2">hello</a></p>')
   })
 </script>
 

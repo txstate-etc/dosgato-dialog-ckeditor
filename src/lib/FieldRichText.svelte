@@ -1,11 +1,12 @@
 <script lang="ts">
   import alertOutline from '@iconify-icons/mdi/alert-outline.js'
-  import { FORM_CONTEXT, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import type { EditorConfig } from '@ckeditor/ckeditor5-core/src/editor/editorconfig'
   import type ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, FieldStandard, Icon, type Client, type AnyUIItem, type Folder } from '@dosgato/dialog'
+  import { FORM_CONTEXT, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onMount, tick } from 'svelte'
   import { Cache } from 'txstate-utils'
+  import { getParserElement } from './util'
 
   export let id: string | undefined = undefined
   export let path: string
@@ -24,8 +25,10 @@
   let element: HTMLElement
   let editor: ClassicEditor
   let latestChooserCB: Function
+  let skipReaction = false
+  let mounted = false
   onMount(async () => {
-    testEl = document.createElement('div')
+    mounted = true
     const Editor = (await import('@dosgato/ckeditor')).default as typeof ClassicEditor
     editor = await Editor.create(element, {
       ...config,
@@ -43,14 +46,26 @@
         }
       }
     } as any)
-    editor.model.document.on('change:data', () => formStore.setField(path, nullableDeserialize(editor.getData())))
-    reactToValue()
+    editor.model.document.on('change:data', () => {
+      skipReaction = true
+      formStore.setField(path, nullableDeserialize(editor.getData()))
+      tick().then(() => { skipReaction = false })
+    })
+    await reactToValue()
   })
 
+  const findByIdCache = new Cache(async (id: string) => {
+    const item = await chooserClient?.findById(id)
+    if (item) findByUrlCache.set(item.url, item)
+    return item
+  })
   const findByUrlCache = new Cache(async (url: string) => {
-    return await chooserClient?.findByUrl?.(url)
+    const item = await chooserClient?.findByUrl?.(url)
+    if (item) findByIdCache.set(item.id, item)
+    return item
   })
   async function finalize (data: string) {
+    const testEl = getParserElement()
     testEl.innerHTML = data
     const links = testEl.querySelectorAll('[href]')
     const images = testEl.querySelectorAll('[src]')
@@ -85,22 +100,40 @@
   }
   async function chooserComplete (e: any) {
     const item: Exclude<AnyUIItem, Folder> = e.detail
+    findByIdCache.set(item.id, item)
+    findByUrlCache.set(item.url, item)
     modaltoshow = undefined
     await tick()
     await tick()
     latestChooserCB(item.url, item.name)
   }
   let charlength: number = 0
-  let testEl: HTMLDivElement
-  function reactToValue (..._: any) {
-    const serialized = nullableSerialize($value)
-    if (testEl && serialized.trim().length > 0) {
+  let reactionVersion = 0
+  async function reactToValue (..._: any) {
+    if (skipReaction) return
+    let serialized = nullableSerialize($value)
+    if (mounted && serialized.trim().length > 0) {
+      const testEl = getParserElement()
       testEl.innerHTML = serialized
       charlength = testEl.innerText.trim().length
+      const links = testEl.querySelectorAll('[href]')
+      const images = testEl.querySelectorAll('[src]')
+      const saveReactionVersion = ++reactionVersion
+      await Promise.all([
+        ...Array.from(links).map(async link => {
+          const itm = await findByIdCache.get(link.getAttribute('href')!)
+          if (itm) link.setAttribute('href', itm.url)
+        }),
+        ...Array.from(images).map(async image => {
+          const itm = await findByIdCache.get(image.getAttribute('src')!)
+          if (itm) image.setAttribute('src', itm.url)
+        })
+      ])
+      if (reactionVersion === saveReactionVersion) serialized = testEl.innerHTML
     }
     if (editor && editor.getData() !== serialized) editor.setData(serialized)
   }
-  $: reactToValue($value)
+  $: reactToValue($value).catch(e => console.error(e))
   $: exceeded = maxlength && maxlength > 0 && charlength > maxlength
 </script>
 
