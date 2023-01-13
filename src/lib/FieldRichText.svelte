@@ -157,14 +157,15 @@
 </FieldStandard>
 
 <style>
+  .dialog-rich-ckeditor {
+    --ck-z-default: var(--modal-z, 1);
+	  --ck-z-modal: calc( var(--ck-z-default) + 999 );
+  }
   .dialog-rich-charcount {
     text-align: right;
   }
   .dialog-rich-count.exceeded {
     color: #9a3332;
-  }
-  .dialog-rich-ckeditor + :global(.ck-editor) {
-    overflow: hidden;
   }
   .dialog-rich-ckeditor + :global(.ck-editor .ck-content) {
     min-height: 100px;
