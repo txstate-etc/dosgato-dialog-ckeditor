@@ -7,6 +7,7 @@
   import { getContext, onMount, tick } from 'svelte'
   import { Cache } from 'txstate-utils'
   import { getParserElement } from './util'
+  import { defaultConfig, minimalConfig, minimalConfigWithLists, tiConfig } from './RichTextTypes'
 
   export let id: string | undefined = undefined
   export let path: string
@@ -14,11 +15,19 @@
   export let maxlength: number|undefined = undefined
   export let conditional: boolean|undefined = undefined
   export let required = false
+  export let configType: 'full' | 'min' | 'minwithlist' | 'ti' | undefined
   export let config: EditorConfig|undefined = undefined
+  export let minimal = false
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const value = formStore.getField<string>(path)
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
+
+  if (!configType) configType = defaultConfig
+  else if (configType === 'min') configType = minimalConfig
+  else if (configType === 'minwithlist') configType = minimalConfigWithLists
+  else if (configType === 'ti') configType = tiConfig
+  else configType = defaultConfig
 
   const linkStore = new ChooserStore(chooserClient)
   const imageStore = new ChooserStore(chooserClient)
@@ -31,6 +40,7 @@
     mounted = true
     const Editor = (await import('@dosgato/ckeditor')).default as typeof ClassicEditor
     editor = await Editor.create(element, {
+      ...configType,
       ...config,
       assetBrowser: {
         browseImage: async (next: (imageUrl: string) => void) => {
@@ -167,8 +177,9 @@
   .dialog-rich-count.exceeded {
     color: #9a3332;
   }
+
   .dialog-rich-ckeditor + :global(.ck-editor .ck-content) {
-    min-height: 100px;
+    min-height: 400px;
     max-height: 75vh;
     overflow: auto;
   }
