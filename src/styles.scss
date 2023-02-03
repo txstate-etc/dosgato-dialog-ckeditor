@@ -1,0 +1,149 @@
+$black:               #000000;
+$default-graphite:    #444444;
+$default-blue:        #2c5271;
+$default-beige:       #c4a77d;
+$light-beige:         #D0B997;
+$almost-black:        #111111;
+$very-dark:           #222222;  
+$white:               #ffffff;
+$maroon:              #501214;
+$gold:                #6A5638;
+$charcoal:            #363534;
+$blue:                #00507A;
+$river:               #6EA095;
+$sandstone:           #f5f1ee;
+$oldgold:             #EBBA45;
+$light-sandstone:     #F4F1ED;
+$platinum:            #e4e4e4;
+
+$table-link: $default-blue;
+$table-header-text: $black;
+$table-header-bg: $default-beige;
+$table-border: $platinum;
+$table-altrow-bg: $light-sandstone;
+$body-background-color:   $white;
+
+figure.table.ck-widget {
+  width:100%;
+  overflow-x:auto;
+
+  &.header-color-none th{
+    background: transparent;
+    color: #3e3e3e;
+    a{
+      color: #3e3e3e;
+      &:hover{
+        background: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+  &.header-color-gold th{
+    background: $table-header-bg;
+    color: $table-header-text;
+    a{
+      color: $table-header-text;
+      &:hover{
+        background: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+  &.header-color-maroon th{
+    background: $maroon;
+    color: $white;
+    a{
+      color: $white;
+      &:hover{
+        background: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+  &.header-color-sandstone th{
+    background: $sandstone;
+    color: $very-dark;
+    a{
+      color: $very-dark;
+      &:hover{
+        background: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+  &.header-color-charcoal th{
+    background: $charcoal;
+    color: $white;
+    a{
+      color: $white;
+      &:hover{
+        background: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+  &.header-color-blue th{
+    background: $blue;
+    color: $white;
+    a{
+      color: $white;
+      &:hover{
+        background: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+  &.header-color-river th{
+    background: $river;
+    color: $almost-black;
+    a{
+      color: $almost-black;
+      &:hover{
+        background: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+  &.header-color-oldgold th{
+    background: $oldgold;
+    color: $very-dark;
+    a{
+      color: $very-dark;
+      &:hover{
+        background: transparent;
+        text-decoration: none;
+      }
+    }
+  }
+  table {
+    td, th{
+      padding: 0.5rem 1rem;
+      border-color: $table-border;
+    }
+    th {
+      background: $table-header-bg;
+      color: $table-header-text;
+    }
+    a{
+      color: $table-link;
+      &:hover{
+        text-decoration: none;
+        background: transparent;
+      }
+    }
+    border: none;
+  }
+}
+
+figure.auto-width.table.ck-widget table {
+  width: auto;
+}
+figure.full-width.table.ck-widget table {
+  width: 100%;
+}
+figure.alternate-row-color.table tbody tr:nth-child(odd) {
+  background-color: $table-altrow-bg;
+}
+figure.alternate-row-color.table tbody tr:nth-child(even) {
+  background-color: $body-background-color;
+}
