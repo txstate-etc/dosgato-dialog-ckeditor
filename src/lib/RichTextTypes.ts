@@ -70,7 +70,14 @@ export const defaultConfig = {
 
 export const minimalConfig = {
   toolbar: {
-    items: ['sourceEditing']
+    items: [
+      'bold',
+      'italic',
+      'removeFormat',
+      'specialCharacters',
+      '|',
+      'link'
+    ]
   }
 }
 
@@ -103,5 +110,24 @@ export const minimalConfigWithLists = {
   }
 }
 
-export const tiConfig = {}
+export const tiConfig = {
+  toolbar: {
+    items: [
+      'bold',
+      'italic',
+      'removeFormat',
+      'specialCharacters',
+      '|',
+      'link',
+      '|',
+      'undo',
+      'redo',
+      '|',
+      'numberedList',
+      'bulletedList',
+      '|',
+      'sourceEditing'
+    ]
+  }
+}
 

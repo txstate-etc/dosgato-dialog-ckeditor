@@ -15,7 +15,7 @@
   export let maxlength: number|undefined = undefined
   export let conditional: boolean|undefined = undefined
   export let required = false
-  export let configType: 'full' | 'min' | 'minwithlist' | 'ti' | undefined
+  export let configType: 'full' | 'min' | 'minwithlist' | 'ti' = 'full'
   export let config: EditorConfig|undefined = undefined
   export let minimal = false
 
@@ -182,5 +182,9 @@
     min-height: 400px;
     max-height: 75vh;
     overflow: auto;
+  }
+
+  .ck.ck-balloon-panel {
+    z-index: var(--ck-z-modal);
   }
 </style>
