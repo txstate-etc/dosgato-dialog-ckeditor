@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Form } from '@dosgato/dialog'
+  import { FormDialog } from '@dosgato/dialog'
   import type { Feedback, FormStore } from '@txstate-mws/svelte-forms'
   import { onMount } from 'svelte'
   import { demoChooserAPI } from '../demo/DemoChooserAPI'
@@ -33,10 +33,10 @@
 <h1>DosGato Dialog Example</h1>
 
 <main>
-<Form bind:store {submit} {validate} chooserClient={demoChooserAPI} let:saved>
+<FormDialog bind:store {submit} {validate} chooserClient={demoChooserAPI} let:saved>
   <FieldRichText path="richtext" label="Rich Text" maxlength={10} />
   {#if saved}Save successful!{/if}
-</Form>
+</FormDialog>
 </main>
 <aside>
   <pre>{JSON.stringify($store?.data, null, 2)}</pre>
