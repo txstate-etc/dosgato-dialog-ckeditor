@@ -4,7 +4,7 @@
   import { onMount } from 'svelte'
   import { demoChooserAPI } from '../demo/DemoChooserAPI'
   import { FieldRichText } from '$lib'
-  import styles from '../styles.scss'
+  import styles from '../styles.scss?inline'
   let store: FormStore
 
   async function submit (data) {

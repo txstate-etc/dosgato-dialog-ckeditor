@@ -23,11 +23,12 @@
   const value = formStore.getField<string>(path)
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
 
-  if (!configType) configType = defaultConfig
-  else if (configType === 'min') configType = minimalConfig
-  else if (configType === 'minwithlist') configType = minimalConfigWithLists
-  else if (configType === 'ti') configType = tiConfig
-  else configType = defaultConfig
+  let presetConfig
+  if (!configType) presetConfig = defaultConfig
+  else if (configType === 'min') presetConfig = minimalConfig
+  else if (configType === 'minwithlist') presetConfig = minimalConfigWithLists
+  else if (configType === 'ti') presetConfig = tiConfig
+  else presetConfig = defaultConfig
 
   const linkStore = new ChooserStore(chooserClient)
   const imageStore = new ChooserStore(chooserClient)
@@ -38,9 +39,11 @@
   let mounted = false
   onMount(async () => {
     mounted = true
+    const modalz = element.style.getPropertyValue('--modal-z')
+    document.body.style.setProperty('--ck-z-default', modalz ? modalz : '1')
     const Editor = (await import('@dosgato/ckeditor')).default as typeof ClassicEditor
     editor = await Editor.create(element, {
-      ...configType,
+      ...presetConfig,
       ...config,
       assetBrowser: {
         browseImage: async (next: (imageUrl: string) => void) => {
@@ -167,10 +170,6 @@
 </FieldStandard>
 
 <style>
-  .dialog-rich-ckeditor {
-    --ck-z-default: var(--modal-z, 1);
-	  --ck-z-modal: calc( var(--ck-z-default) + 999 );
-  }
   .dialog-rich-charcount {
     text-align: right;
   }
@@ -182,9 +181,5 @@
     min-height: 400px;
     max-height: 75vh;
     overflow: auto;
-  }
-
-  .ck.ck-balloon-panel {
-    z-index: var(--ck-z-modal);
   }
 </style>
