@@ -63,9 +63,8 @@
       tick().then(() => { skipReaction = false })
     })
     await reactToValue()
-    await tick()
-    const modalz = element.style.getPropertyValue('--modal-z')
-    document.body.style.setProperty('--ck-z-default', modalz ? modalz : '1')
+    const modalz = getComputedStyle(element).getPropertyValue('--modal-z')
+    document.documentElement.style.setProperty('--ck-z-default', modalz ? modalz : '1')
   })
 
   const findByIdCache = new Cache(async (id: string) => {
