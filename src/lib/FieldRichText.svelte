@@ -39,8 +39,6 @@
   let mounted = false
   onMount(async () => {
     mounted = true
-    const modalz = element.style.getPropertyValue('--modal-z')
-    document.body.style.setProperty('--ck-z-default', modalz ? modalz : '1')
     const Editor = (await import('@dosgato/ckeditor')).default as typeof ClassicEditor
     editor = await Editor.create(element, {
       ...presetConfig,
@@ -65,6 +63,9 @@
       tick().then(() => { skipReaction = false })
     })
     await reactToValue()
+    await tick()
+    const modalz = element.style.getPropertyValue('--modal-z')
+    document.body.style.setProperty('--ck-z-default', modalz ? modalz : '1')
   })
 
   const findByIdCache = new Cache(async (id: string) => {
