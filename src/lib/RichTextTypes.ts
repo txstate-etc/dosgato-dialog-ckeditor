@@ -1,9 +1,14 @@
 export type ConfigType = 'full' | 'min' | 'minwithlist' | 'ti'
 
-export interface Colors {
+export interface ColorClasses {
   label: string
   value: string
   default?: boolean
+}
+
+interface Colors {
+  label: string
+  color: string
 }
 
 export interface TemplateProperties {
@@ -12,7 +17,7 @@ export interface TemplateProperties {
   definitionColors?: string[]
 }
 
-const defaultHeaderColors: Colors[] = [
+const defaultHeaderColors: ColorClasses[] = [
   { label: 'None', value: 'header-color-none' },
   { label: 'Default (Gold)', value: 'header-color-gold', default: true },
   { label: 'Maroon', value: 'header-color-maroon' },
@@ -24,13 +29,13 @@ const defaultHeaderColors: Colors[] = [
 ]
 
 const defaultTemplateColors: Colors[] = [
-  { label: 'Maroon', value: '#501214' },
-  { label: 'Gold', value: '#6A5638' },
-  { label: 'Charcoal', value: '#363534' },
-  { label: 'Deep Blue', value: '#005481' },
-  { label: 'River', value: '#8BAEA1' },
-  { label: 'Sandstone', value: '#E8E3DB' },
-  { label: 'Old Gold', value: '#DEB407' }
+  { label: 'Maroon', color: '#501214' },
+  { label: 'Gold', color: '#6A5638' },
+  { label: 'Charcoal', color: '#363534' },
+  { label: 'Deep Blue', color: '#005481' },
+  { label: 'River', color: '#8BAEA1' },
+  { label: 'Sandstone', color: '#E8E3DB' },
+  { label: 'Old Gold', color: '#DEB407' }
 ]
 
 const defaultDefinitionColors: string[] = ['#222222', '#501214', '#6a5638', '#363534', '#b30e1b']
@@ -190,8 +195,8 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
     backgroundColors: options.templateColors ?? defaultTemplateColors
   }
 
-  presetConfig.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
-  presetConfig.tableCellProperties = tableCellProperties
+  presetConfig.table.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
+  presetConfig.table.tableCellProperties = tableCellProperties
 
   return presetConfig
 }
