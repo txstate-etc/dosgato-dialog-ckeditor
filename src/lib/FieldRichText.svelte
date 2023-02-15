@@ -7,7 +7,7 @@
   import { getContext, onMount, tick } from 'svelte'
   import { Cache } from 'txstate-utils'
   import { getParserElement } from './util'
-  import { defaultConfig, minimalConfig, minimalConfigWithLists, tiConfig } from './RichTextTypes'
+  import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
   export let id: string | undefined = undefined
   export let path: string
@@ -15,7 +15,8 @@
   export let maxlength: number|undefined = undefined
   export let conditional: boolean|undefined = undefined
   export let required = false
-  export let configType: 'full' | 'min' | 'minwithlist' | 'ti' = 'full'
+  export let configType: ConfigType = 'full'
+  export let templateProperties: TemplateProperties = {}
   export let config: EditorConfig|undefined = undefined
   export let minimal = false
 
@@ -23,12 +24,7 @@
   const value = formStore.getField<string>(path)
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
 
-  let presetConfig
-  if (!configType) presetConfig = defaultConfig
-  else if (configType === 'min') presetConfig = minimalConfig
-  else if (configType === 'minwithlist') presetConfig = minimalConfigWithLists
-  else if (configType === 'ti') presetConfig = tiConfig
-  else presetConfig = defaultConfig
+  const presetConfig = getConfig(configType, templateProperties)
 
   const linkStore = new ChooserStore(chooserClient)
   const imageStore = new ChooserStore(chooserClient)

@@ -1,3 +1,40 @@
+export type ConfigType = 'full' | 'min' | 'minwithlist' | 'ti'
+
+export interface Colors {
+  label: string
+  value: string
+  default?: boolean
+}
+
+export interface TemplateProperties {
+  tableHeaderColors?: Colors[]
+  templateColors?: Colors[]
+  definitionColors?: string[]
+}
+
+const defaultHeaderColors: Colors[] = [
+  { label: 'None', value: 'header-color-none' },
+  { label: 'Default (Gold)', value: 'header-color-gold', default: true },
+  { label: 'Maroon', value: 'header-color-maroon' },
+  { label: 'Charcoal', value: 'header-color-charcoal' },
+  { label: 'Deep Blue', value: 'header-color-blue' },
+  { label: 'River', value: 'header-color-river' },
+  { label: 'Sandstone', value: 'header-color-sandstone' },
+  { label: 'Old Gold', value: 'header-color-oldgold' }
+]
+
+const defaultTemplateColors: Colors[] = [
+  { label: 'Maroon', value: '#501214' },
+  { label: 'Gold', value: '#6A5638' },
+  { label: 'Charcoal', value: '#363534' },
+  { label: 'Deep Blue', value: '#005481' },
+  { label: 'River', value: '#8BAEA1' },
+  { label: 'Sandstone', value: '#E8E3DB' },
+  { label: 'Old Gold', value: '#DEB407' }
+]
+
+const defaultDefinitionColors: string[] = ['#222222', '#501214', '#6a5638', '#363534', '#b30e1b']
+
 export const defaultConfig = {
   toolbar: {
     items: [
@@ -129,5 +166,33 @@ export const tiConfig = {
       'sourceEditing'
     ]
   }
+}
+
+export function getConfig (configType: ConfigType, options: TemplateProperties) {
+  let presetConfig
+  if (!configType) presetConfig = defaultConfig
+  else if (configType === 'min') presetConfig = minimalConfig
+  else if (configType === 'minwithlist') presetConfig = minimalConfigWithLists
+  else if (configType === 'ti') presetConfig = tiConfig
+  else presetConfig = defaultConfig
+
+  if (configType === 'min' || configType === 'ti') return presetConfig
+
+  const fontColor = {
+    colors: options.definitionColors ?? defaultDefinitionColors
+  }
+
+  presetConfig.fontColor = fontColor
+
+  if (configType === 'minwithlist') return presetConfig
+
+  const tableCellProperties = {
+    backgroundColors: options.templateColors ?? defaultTemplateColors
+  }
+
+  presetConfig.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
+  presetConfig.tableCellProperties = tableCellProperties
+
+  return presetConfig
 }
 
