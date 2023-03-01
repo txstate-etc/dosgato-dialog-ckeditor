@@ -75,7 +75,7 @@
   })
   async function finalize (data: string) {
     const testEl = getParserElement()
-    testEl.innerHTML = data
+    testEl.innerHTML = nullableSerialize(data)
     const links = testEl.querySelectorAll('[href]')
     const images = testEl.querySelectorAll('[src]')
     await Promise.all([
