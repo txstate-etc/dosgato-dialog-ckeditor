@@ -4,8 +4,10 @@
   import { onMount } from 'svelte'
   import { demoChooserAPI } from '../demo/DemoChooserAPI'
   import { FieldRichText } from '$lib'
-  import styles from '../styles.scss?inline'
+  import '../styles.scss?inline'
   let store: FormStore
+
+  let showdialog = true
 
   async function submit (data) {
     return {
@@ -24,6 +26,10 @@
     }]
   }
 
+  function escape () {
+    showdialog = false
+  }
+
   onMount(() => {
     store.setField('richtext', '<p><a href="page-2">hello</a></p>')
   })
@@ -31,12 +37,15 @@
 
 <svelte:head><title>DosGato Dialog Example</title></svelte:head>
 <h1>DosGato Dialog Example</h1>
+<button on:click={() => { showdialog = true }}>Show Dialog</button>
 
 <main>
-<FormDialog bind:store {submit} {validate} chooserClient={demoChooserAPI} let:saved>
-  <FieldRichText path="richtext" label="Rich Text" maxlength={10} />
-  {#if saved}Save successful!{/if}
-</FormDialog>
+{#if showdialog}
+  <FormDialog bind:store {submit} {validate} chooserClient={demoChooserAPI} let:saved on:escape={escape}>
+    <FieldRichText path="richtext" label="Rich Text" maxlength={10} />
+    {#if saved}Save successful!{/if}
+  </FormDialog>
+{/if}
 </main>
 <aside>
   <pre>{JSON.stringify($store?.data, null, 2)}</pre>

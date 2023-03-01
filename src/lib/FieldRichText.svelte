@@ -18,7 +18,6 @@
   export let configType: ConfigType = 'full'
   export let templateProperties: TemplateProperties = {}
   export let config: EditorConfig|undefined = undefined
-  export let minimal = false
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const value = formStore.getField<string>(path)
@@ -118,6 +117,7 @@
   }
   let charlength: number = 0
   let reactionVersion = 0
+
   async function reactToValue (..._: any) {
     if (skipReaction) return
     let serialized = nullableSerialize($value)
