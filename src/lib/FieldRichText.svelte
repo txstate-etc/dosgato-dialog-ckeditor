@@ -3,9 +3,9 @@
   import type { EditorConfig } from '@ckeditor/ckeditor5-core/src/editor/editorconfig'
   import type ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, FieldStandard, Icon, type Client, type AnyUIItem, type Folder } from '@dosgato/dialog'
-  import { FORM_CONTEXT, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
+  import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onMount, tick } from 'svelte'
-  import { Cache } from 'txstate-utils'
+  import { Cache, isNotBlank } from 'txstate-utils'
   import { getParserElement } from './util'
   import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
@@ -20,7 +20,9 @@
   export let config: EditorConfig|undefined = undefined
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
-  const value = formStore.getField<string>(path)
+  const inheritedPath = getContext<string>(FORM_INHERITED_PATH)
+  const finalPath = [inheritedPath, path].filter(isNotBlank).join('.')
+  const value = formStore.getField<string>(finalPath)
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
 
   const presetConfig = getConfig(configType, templateProperties)
@@ -54,7 +56,7 @@
     } as any)
     editor.model.document.on('change:data', () => {
       skipReaction = true
-      formStore.setField(path, nullableDeserialize(editor.getData()))
+      formStore.setField(finalPath, nullableDeserialize(editor.getData()))
       tick().then(() => { skipReaction = false })
     })
     await reactToValue()
