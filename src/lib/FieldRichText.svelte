@@ -5,7 +5,7 @@
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, FieldStandard, Icon, type Client, type AnyUIItem, type Folder } from '@dosgato/dialog'
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onMount, tick } from 'svelte'
-  import { Cache, isNotBlank } from 'txstate-utils'
+  import { Cache, isNotBlank, randomid } from 'txstate-utils'
   import { getParserElement } from './util'
   import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
@@ -18,12 +18,15 @@
   export let configType: ConfigType = 'full'
   export let templateProperties: TemplateProperties = {}
   export let config: EditorConfig|undefined = undefined
+  export let helptext: string | undefined
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const inheritedPath = getContext<string>(FORM_INHERITED_PATH)
   const finalPath = [inheritedPath, path].filter(isNotBlank).join('.')
   const value = formStore.getField<string>(finalPath)
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
+
+  const editorId = randomid()
 
   const presetConfig = getConfig(configType, templateProperties)
 
@@ -62,6 +65,25 @@
     await reactToValue()
     const modalz = getComputedStyle(element).getPropertyValue('--modal-z')
     document.documentElement.style.setProperty('--ck-z-default', modalz ? modalz : '1')
+
+    const editorWrapper = document.getElementById(editorId)
+    if (editorWrapper) {
+      const editorLabel = editorWrapper.querySelector('label')
+      if (editorLabel) {
+        editorLabel.textContent = label
+        editorLabel.classList.remove('ck-voice-label')
+        editorLabel.classList.add('dialog-field-label')
+      }
+      if (helptext) {
+        const helpTextId = randomid()
+        const ed = editorWrapper.querySelector('.ck-editor')
+
+        if (ed) {
+          ed.setAttribute('aria-describedby', helpTextId)
+          editorLabel?.insertAdjacentHTML('afterend', `<div id="${helpTextId}" class="dialog-field-help">${helptext}</div>`)
+        }
+      }
+    }
   })
 
   const findByIdCache = new Cache(async (id: string) => {
@@ -148,8 +170,10 @@
   $: exceeded = maxlength && maxlength > 0 && charlength > maxlength
 </script>
 
-<FieldStandard bind:id {label} {path} {required} {conditional} {finalize} let:id let:onBlur>
-  <div {id} class="dialog-rich-ckeditor" bind:this={element}></div>
+<FieldStandard bind:id label='' {path} {required} {conditional} {finalize} let:id let:onBlur>
+  <div id={editorId}>
+    <div {id} class="dialog-rich-ckeditor" bind:this={element}></div>
+  </div>
   {#if maxlength}
     <div class="dialog-rich-charcount">
       <span class="dialog-rich-count" class:exceeded>
@@ -179,5 +203,11 @@
     min-height: 400px;
     max-height: 75vh;
     overflow: auto;
+  }
+
+  :global(.ck.ck-label.dialog-field-label) {
+    display: block;
+    margin-bottom: 0.3em;
+    font-weight: 500;
   }
 </style>
