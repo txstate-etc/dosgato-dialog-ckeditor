@@ -18,7 +18,7 @@
   export let configType: ConfigType = 'full'
   export let templateProperties: TemplateProperties = {}
   export let config: EditorConfig|undefined = undefined
-  export let helptext: string | undefined
+  export let helptext: string | undefined = undefined
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const inheritedPath = getContext<string>(FORM_INHERITED_PATH)
@@ -70,6 +70,7 @@
     if (editorWrapper) {
       const editorLabel = editorWrapper.querySelector('label')
       if (editorLabel) {
+        if (required) label = label += ' *'
         editorLabel.textContent = label
         editorLabel.classList.remove('ck-voice-label')
         editorLabel.classList.add('dialog-field-label')
@@ -170,7 +171,7 @@
   $: exceeded = maxlength && maxlength > 0 && charlength > maxlength
 </script>
 
-<FieldStandard bind:id label='' {path} {required} {conditional} {finalize} let:id let:onBlur>
+<FieldStandard bind:id label='' {path} {conditional} {finalize} let:id let:onBlur>
   <div id={editorId}>
     <div {id} class="dialog-rich-ckeditor" bind:this={element}></div>
   </div>
@@ -205,9 +206,28 @@
     overflow: auto;
   }
 
+  :global(.ck-content figure.table) {
+    display: block;
+  }
+  :global(figure.table table) {
+    width: 100%;
+    overflow-x: auto;
+  }
+  :global(figure.table.auto-width table) {
+    width: auto;
+  }
+
+  :global(figure.table.full-width table) {
+    width: 100%;
+  }
+
   :global(.ck.ck-label.dialog-field-label) {
     display: block;
     margin-bottom: 0.3em;
     font-weight: 500;
+  }
+  :global(.dialog-field-help) {
+    font-size: 0.9em;
+    color: #595959;
   }
 </style>
