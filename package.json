@@ -1,7 +1,7 @@
 {
   "name": "@dosgato/dialog-ckeditor",
   "description": "A form control that provides an instance of CKEditor. Designed to be compatible with @dosgato/dialog.",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
