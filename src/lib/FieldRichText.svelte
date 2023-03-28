@@ -4,8 +4,9 @@
   import type ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, FieldStandard, Icon, type Client, type AnyUIItem, type Folder } from '@dosgato/dialog'
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
-  import { getContext, onMount, tick } from 'svelte'
+  import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { Cache, isNotBlank, randomid } from 'txstate-utils'
+  import { browser } from '$app/environment'
   import { getParserElement } from './util'
   import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
@@ -64,7 +65,8 @@
     })
     await reactToValue()
     const modalz = getComputedStyle(element).getPropertyValue('--modal-z')
-    document.documentElement.style.setProperty('--ck-z-default', modalz ? modalz : '1')
+    document.documentElement.style.setProperty('--ck-z-default', modalz || '1')
+    document.documentElement.style.setProperty('--ck-z-modal', String(Number(modalz) + 1 || '1'))
 
     const editorWrapper = document.getElementById(editorId)
     if (editorWrapper) {
@@ -85,6 +87,10 @@
         }
       }
     }
+  })
+  onDestroy(() => {
+    // onDestroy runs in SSR but we don't create editor in SSR
+    if (browser) editor.destroy()
   })
 
   const findByIdCache = new Cache(async (id: string) => {
