@@ -1,16 +1,17 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import type { Asset, ChooserType, Client, Folder, Page, Source, AnyItem } from '@dosgato/dialog'
 import { randomid } from 'txstate-utils'
 
 interface StoredAsset extends Omit<Asset, 'source'> {}
 interface RootFolder {
   children?: (StoredAsset | FolderWithChildren)[]
-  acceptsUpload?: boolean
+  acceptsUpload: boolean
 }
 interface RootPage {
   children?: PageWithChildren[]
 }
 interface FolderWithChildren extends Omit<Folder, 'source'> {
-  children?: (StoredAsset | FolderWithChildren)[]
+  children?: (StoredAsset | this)[]
 }
 interface PageWithChildren extends Omit<Page, 'source'> {
   children?: PageWithChildren[]
@@ -29,6 +30,7 @@ const assets: Record<string, RootFolder | RootPage> = {
         url: '/assets/biology',
         acceptsUpload: true,
         hasChildren: true,
+        childCount: 2,
         children: [
           {
             type: 'folder',
@@ -38,6 +40,7 @@ const assets: Record<string, RootFolder | RootPage> = {
             url: '/assets/biology/evolutionary',
             acceptsUpload: false,
             hasChildren: true,
+            childCount: 1,
             children: [
               { type: 'asset', id: 'asset-3', path: '/biology/evolutionary/missinglink.png', name: 'missinglink.png', mime: 'image/png', bytes: 196672, url: '/demo-full.png', image: { width: 909, height: 1114, thumbnailUrl: '/demo-thumb.png' } }
             ]
@@ -53,6 +56,7 @@ const assets: Record<string, RootFolder | RootPage> = {
         url: '/assets/chemistry',
         acceptsUpload: true,
         hasChildren: true,
+        childCount: 1,
         children: [
           { type: 'folder', id: 'folder-6', name: 'organic', path: '/chemistry/organic', url: '/assets/chemistry/organic', acceptsUpload: true, hasChildren: false }
         ]
@@ -65,6 +69,7 @@ const assets: Record<string, RootFolder | RootPage> = {
         url: '/assets/physics',
         acceptsUpload: true,
         hasChildren: true,
+        childCount: 3,
         children: [
           { type: 'asset', id: 'asset-1', path: '/physics/cannondiagram.png', name: 'cannondiagram.png', mime: 'image/png', bytes: 196672, url: '/demo-full.png', image: { width: 909, height: 1114, thumbnailUrl: '/demo-thumb.png' } },
           { type: 'asset', id: 'asset-2', path: '/physics/modernphysics.pdf', name: 'modernphysics.pdf', mime: 'application/pdf', bytes: 1264, url: '/blankpdf.pdf' },
@@ -72,7 +77,7 @@ const assets: Record<string, RootFolder | RootPage> = {
         ]
       }
     ]
-  },
+  } as RootFolder,
   Canto: {
     children: []
   },

@@ -6,7 +6,6 @@
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { Cache, isNotBlank, randomid } from 'txstate-utils'
-  import { browser } from '$app/environment'
   import { getParserElement } from './util'
   import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
@@ -90,7 +89,7 @@
   })
   onDestroy(() => {
     // onDestroy runs in SSR but we don't create editor in SSR
-    if (browser) editor.destroy()
+    editor?.destroy()
   })
 
   const findByIdCache = new Cache(async (id: string) => {
