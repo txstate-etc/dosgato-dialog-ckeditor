@@ -11,13 +11,11 @@
 
   export let id: string | undefined = undefined
   export let path: string
-  export let label: string = ''
   export let maxlength: number|undefined = undefined
   export let required = false
   export let configType: ConfigType = 'full'
   export let templateProperties: TemplateProperties = {}
   export let config: EditorConfig|undefined = undefined
-  export let helptext: string | undefined = undefined
   export let findByIdCache: Cache<string, AnyItem | undefined>
   export let findByUrlCache: Cache<string, AnyItem | undefined>
 
@@ -68,24 +66,19 @@
     document.documentElement.style.setProperty('--ck-z-default', modalz || '1')
     document.documentElement.style.setProperty('--ck-z-modal', String(Number(modalz) + 1 || '1'))
 
+    // removing CKEditor 5 hardcoded sr-only label
+    // updating their wrapper's labeledby/describedby with our labels and helptext ID's
     const editorWrapper = document.getElementById(editorId)
     if (editorWrapper) {
-      const editorLabel = editorWrapper.querySelector('label')
-      if (editorLabel) {
-        if (required) label = label += ' *'
-        editorLabel.textContent = label
-        editorLabel.classList.remove('ck-voice-label')
-        editorLabel.classList.add('dialog-field-label')
-      }
-      if (helptext) {
-        const helpTextId = randomid()
-        const ed = editorWrapper.querySelector('.ck-editor')
+      const richEditorLabel = editorWrapper.querySelector('label')
 
-        if (ed) {
-          ed.setAttribute('aria-describedby', helpTextId)
-          editorLabel?.insertAdjacentHTML('afterend', `<div id="${helpTextId}" class="dialog-field-help">${helptext}</div>`)
-        }
-      }
+      const wrapper = richEditorLabel?.parentElement
+      if (id) wrapper?.setAttribute('aria-labelledby', id)
+
+      const helpTextID = editorWrapper.parentElement?.querySelector('.dialog-field-help')?.getAttribute('id')
+      if (helpTextID) wrapper?.setAttribute('aria-describedby', helpTextID)
+
+      richEditorLabel?.remove()
     }
   })
   onDestroy(() => {
@@ -150,7 +143,7 @@
 </script>
 
 <div id={editorId}>
-  <div {id} class="dialog-rich-ckeditor" bind:this={element}></div>
+  <div class="dialog-rich-ckeditor" bind:this={element}></div>
 </div>
 {#if maxlength}
   <div class="dialog-rich-charcount">

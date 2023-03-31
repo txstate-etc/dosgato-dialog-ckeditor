@@ -53,6 +53,6 @@
 
 </script>
 
-<FieldStandard bind:id label='' {path} {conditional} {finalize} let:id let:onBlur let:setVal>
-  <RichTextEditor {path} {label} {maxlength} {required} {configType} {templateProperties} {config} {helptext} {findByIdCache} {findByUrlCache} />
+<FieldStandard bind:id {label} {helptext} {path} {conditional} {finalize} let:id let:onBlur let:setVal>
+  <RichTextEditor {id} {path} {maxlength} {required} {configType} {templateProperties} {config} {findByIdCache} {findByUrlCache} />
 </FieldStandard>
