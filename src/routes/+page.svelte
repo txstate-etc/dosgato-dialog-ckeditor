@@ -44,6 +44,7 @@
   <FormDialog bind:store {submit} {validate} chooserClient={demoChooserAPI} let:saved on:escape={escape}>
     <FieldRichText path="richtext" label="Rich Text" maxlength={10} />
     {#if saved}Save successful!{/if}
+    <FieldRichText path="richtext2" conditional={false} label="Rich Text" maxlength={10} />
   </FormDialog>
 {/if}
 </main>
