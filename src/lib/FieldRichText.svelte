@@ -225,6 +225,11 @@
   :global(figure.table.full-width table) {
     width: 100%;
   }
+  
+  :global(figure.table.ck-widget.border table, figure.table.ck-widget.border table th, figure.table.ck-widget.border table td) {
+    border-width: 2px;
+    border-style: solid;
+  }
 
   :global(.ck.ck-label.dialog-field-label) {
     display: block;
