@@ -1,12 +1,15 @@
 {
   "name": "@dosgato/dialog-ckeditor",
   "description": "A form control that provides an instance of CKEditor. Designed to be compatible with @dosgato/dialog.",
-  "version": "0.0.17",
+  "version": "0.0.18",
+  "main": "./dist/index.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "svelte": "./dist/index.js"
-    }
+      "svelte": "./dist/index.js",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "prepublishOnly": "svelte-package",
