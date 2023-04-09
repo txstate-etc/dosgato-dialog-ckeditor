@@ -2,7 +2,7 @@
   import alertOutline from '@iconify-icons/mdi/alert-outline.js'
   import type { EditorConfig } from '@ckeditor/ckeditor5-core/src/editor/editorconfig'
   import type ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
-  import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, FieldStandard, Icon, type Client, type AnyUIItem, type Folder, type AnyItem } from '@dosgato/dialog'
+  import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, Icon, type Client, type AnyUIItem, type Folder, type AnyItem } from '@dosgato/dialog'
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { Cache, isNotBlank, randomid } from 'txstate-utils'
@@ -12,7 +12,6 @@
   export let id: string | undefined = undefined
   export let path: string
   export let maxlength: number|undefined = undefined
-  export let required = false
   export let configType: ConfigType = 'full'
   export let templateProperties: TemplateProperties = {}
   export let config: EditorConfig|undefined = undefined
