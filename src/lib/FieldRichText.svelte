@@ -22,12 +22,14 @@
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
 
   const findByIdCache = new Cache(async (id: string) => {
+    if (!id) return
     const item = await chooserClient?.findById(id)
     if (item) findByUrlCache.set(item.url, item)
     return item
   })
 
   const findByUrlCache = new Cache(async (url: string) => {
+    if (!url) return
     const item = await chooserClient?.findByUrl?.(url)
     if (item) findByIdCache.set(item.id, item)
     return item
