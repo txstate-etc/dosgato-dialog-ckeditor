@@ -3,7 +3,7 @@
   import { CHOOSER_API_CONTEXT, type Client, FieldStandard } from '@dosgato/dialog'
   import { nullableSerialize } from '@txstate-mws/svelte-forms'
   import { getContext } from 'svelte'
-  import { Cache } from 'txstate-utils'
+  import { Cache, isNotBlank } from 'txstate-utils'
   import RichTextEditor from './RichTextEditor.svelte'
   import type { ConfigType, TemplateProperties } from './RichTextTypes'
   import { getParserElement } from './util'
@@ -24,7 +24,10 @@
   const findByIdCache = new Cache(async (id: string) => {
     if (!id) return
     const item = await chooserClient?.findById(id)
-    if (item) findByUrlCache.set(item.url, item)
+    if (item) {
+      findByUrlCache.set(item.url, item)
+      if ('image' in item && isNotBlank(item.image?.previewUrl)) findByUrlCache.set(item.image!.previewUrl, item)
+    }
     return item
   })
 
