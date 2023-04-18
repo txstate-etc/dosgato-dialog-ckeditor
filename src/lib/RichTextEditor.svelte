@@ -61,9 +61,7 @@
       tick().then(() => { skipReaction = false })
     })
     await reactToValue()
-    const modalz = getComputedStyle(element).getPropertyValue('--modal-z')
-    document.documentElement.style.setProperty('--ck-z-default', modalz || '1')
-    document.documentElement.style.setProperty('--ck-z-modal', String(Number(modalz) + 1 || '1'))
+    setModalZ()
 
     // removing CKEditor 5 hardcoded sr-only label
     // updating their wrapper's labeledby/describedby with our labels and helptext ID's
@@ -85,11 +83,18 @@
     editor?.destroy()
   })
 
+  function setModalZ () {
+    const modalz = getComputedStyle(element).getPropertyValue('--modal-z')
+    document.documentElement.style.setProperty('--ck-z-default', modalz || '1')
+    document.documentElement.style.setProperty('--ck-z-modal', String(Number(modalz) + 1 || '1'))
+  }
+
   let modaltoshow: 'link'|'image'|undefined = undefined
   let saveselection
   function show (toshow: 'link'|'image') {
     saveselection = editor.model.document.selection
     modaltoshow = toshow
+    setModalZ()
   }
   async function hide () {
     modaltoshow = undefined
