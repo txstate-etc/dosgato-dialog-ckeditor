@@ -5,7 +5,7 @@
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, Icon, type Client, type AnyUIItem, type Folder, type AnyItem } from '@dosgato/dialog'
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
-  import { Cache, isNotBlank, randomid } from 'txstate-utils'
+  import { Cache, isNotBlank, isNull, randomid } from 'txstate-utils'
   import { getParserElement } from './util'
   import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
@@ -110,10 +110,13 @@
     const item: Exclude<AnyUIItem, Folder> = e.detail
     findByIdCache.set(item.id, item)
     findByUrlCache.set(item.url, item)
+    if ('image' in item && isNotBlank(item.image?.previewUrl)) findByUrlCache.set(item.image!.previewUrl, item)
     modaltoshow = undefined
     await tick()
     await tick()
-    latestChooserCB(item.url, item.name)
+    if ('image' in item && isNotBlank(item.image?.previewUrl)) {
+      latestChooserCB(item.image!.previewUrl, item.name)
+    } else latestChooserCB(item.url, item.name)
   }
   let charlength: number = 0
   let reactionVersion = 0
