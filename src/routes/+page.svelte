@@ -22,7 +22,7 @@
     return [{
       type: 'error',
       message: 'Nope',
-      path: 'multi.0.name'
+      path: 'richtext'
     }]
   }
 
@@ -31,7 +31,7 @@
   }
 
   onMount(() => {
-    store.setField('richtext', '<p><a href="page-2">hello</a></p>')
+    store.setField('richtext', '<p><a href="page-2">hello</a></p><p><a href="{&quot;type&quot;:&quot;url&quot;,&quot;url&quot;:&quot;https://www.google.com&quot;}">hello</a></p>')
   })
 </script>
 

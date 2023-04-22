@@ -5,7 +5,7 @@
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, Icon, type Client, type AnyUIItem, type Folder, type AnyItem } from '@dosgato/dialog'
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
-  import { Cache, isNotBlank, isNull, randomid } from 'txstate-utils'
+  import { Cache, isNotBlank, randomid } from 'txstate-utils'
   import { getParserElement } from './util'
   import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
@@ -55,6 +55,7 @@
         }
       }
     } as any)
+    editor.ui.focusTracker.on('change:isFocused', (evt, name, isFocused) => { if (!isFocused) formStore.dirtyField(finalPath) })
     editor.model.document.on('change:data', () => {
       skipReaction = true
       formStore.setField(finalPath, nullableDeserialize(editor.getData()))
@@ -122,23 +123,34 @@
   let reactionVersion = 0
 
   async function reactToValue (..._: any) {
-    if (skipReaction) return
+    if (!mounted) return
     let serialized = nullableSerialize($value)
-    if (mounted && serialized.trim().length > 0) {
+    if (serialized.trim().length > 0) {
       const testEl = getParserElement()
       testEl.innerHTML = serialized
       charlength = testEl.innerText.trim().length
+      if (skipReaction) return
       const links = testEl.querySelectorAll('[href]')
       const images = testEl.querySelectorAll('[src]')
       const saveReactionVersion = ++reactionVersion
       await Promise.all([
         ...Array.from(links).map(async link => {
-          const itm = await findByIdCache.get(link.getAttribute('href')!)
+          const href = link.getAttribute('href')!
+          const itm = await findByIdCache.get(href)
           if (itm) link.setAttribute('href', itm.url)
+          else {
+            const url = chooserClient.valueToUrl?.(href)
+            if (url) link.setAttribute('href', url)
+          }
         }),
         ...Array.from(images).map(async image => {
-          const itm = await findByIdCache.get(image.getAttribute('src')!)
+          const src = image.getAttribute('src')!
+          const itm = await findByIdCache.get(src)
           if (itm) image.setAttribute('src', itm.url)
+          else {
+            const url = chooserClient.valueToUrl?.(src)
+            if (url) image.setAttribute('src', url)
+          }
         })
       ])
       if (reactionVersion === saveReactionVersion) serialized = testEl.innerHTML

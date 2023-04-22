@@ -45,12 +45,22 @@
     const images = testEl.querySelectorAll('[src]')
     await Promise.all([
       ...Array.from(links).map(async link => {
-        const itm = await findByUrlCache.get(link.getAttribute('href')!)
-        if (itm) link.setAttribute('href', itm.id)
+        const href = link.getAttribute('href')!
+        const itm = await findByUrlCache.get(href)
+        if (itm) link.setAttribute('href', itm.url)
+        else {
+          const value = chooserClient.urlToValue?.(href)
+          if (value) link.setAttribute('href', value)
+        }
       }),
       ...Array.from(images).map(async image => {
-        const itm = await findByUrlCache.get(image.getAttribute('src')!)
-        if (itm) image.setAttribute('src', itm.id)
+        const src = image.getAttribute('src')!
+        const itm = await findByUrlCache.get(src)
+        if (itm) image.setAttribute('src', itm.url)
+        else {
+          const value = chooserClient.urlToValue?.(src)
+          if (value) image.setAttribute('src', value)
+        }
       })
     ])
     return testEl.innerHTML
