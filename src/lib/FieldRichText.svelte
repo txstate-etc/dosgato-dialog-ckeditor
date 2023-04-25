@@ -47,7 +47,7 @@
       ...Array.from(links).map(async link => {
         const href = link.getAttribute('href')!
         const itm = await findByUrlCache.get(href)
-        if (itm) link.setAttribute('href', itm.url)
+        if (itm) link.setAttribute('href', itm.id)
         else {
           const value = chooserClient.urlToValue?.(href)
           if (value) link.setAttribute('href', value)
@@ -56,7 +56,7 @@
       ...Array.from(images).map(async image => {
         const src = image.getAttribute('src')!
         const itm = await findByUrlCache.get(src)
-        if (itm) image.setAttribute('src', itm.url)
+        if (itm) image.setAttribute('src', itm.id)
         else {
           const value = chooserClient.urlToValue?.(src)
           if (value) image.setAttribute('src', value)
