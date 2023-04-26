@@ -84,7 +84,7 @@ export const defaultConfig = {
     ]
   },
   table: {
-    contentToolbar: ['customTableColumn', 'customTableRow', 'mergeTableCells', 'tableCellProperties', 'tableProperties'],
+    contentToolbar: ['tableProperties', 'customTableColumn', 'customTableRow', 'mergeTableCells', 'tableCellProperties'],
     tableProperties: {
       tableHeaderColors: [
         { label: 'None', value: 'header-color-none' },
