@@ -80,7 +80,7 @@ export const defaultConfig = {
       'imageStyle:breakText',
       '|',
       'toggleImageCaption',
-      'imageTextAlternative'
+      'imageTxtAlternative'
     ]
   },
   table: {
