@@ -45,9 +45,14 @@ export const defaultConfig = {
     items: [
       'bold',
       'italic',
+      'strikethrough',
+      'superscript',
+      'subscript',
+      'code',
+      'removeFormat',
+      '|',
       'horizontalLine',
       'blockQuote',
-      'removeFormat',
       'specialCharacters',
       '|',
       'link',
@@ -128,8 +133,6 @@ export const minimalConfigWithLists = {
     items: [
       'bold',
       'italic',
-      'horizontalLine',
-      'blockQuote',
       'removeFormat',
       'specialCharacters',
       '|',
@@ -137,16 +140,10 @@ export const minimalConfigWithLists = {
       '|',
       'undo',
       'redo',
-      'sourceEditing',
-      '-',
       'numberedList',
       'bulletedList',
-      'indent',
-      'outdent',
       '|',
-      'heading',
-      '|',
-      'fontColor'
+      'sourceEditing'
     ],
     shouldNotGroupWhenFull: true
   }
@@ -164,11 +161,16 @@ export const tiConfig = {
       '|',
       'undo',
       'redo',
-      '|',
+      'sourceEditing',
+      '-',
       'numberedList',
       'bulletedList',
+      'indent',
+      'outdent',
       '|',
-      'sourceEditing'
+      'heading',
+      '|',
+      'fontColor'
     ]
   }
 }
@@ -181,22 +183,19 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
   else if (configType === 'ti') presetConfig = tiConfig
   else presetConfig = defaultConfig
 
-  if (configType === 'min' || configType === 'ti') return presetConfig
+  if (configType !== 'full') return presetConfig
 
   const fontColor = {
     colors: options.definitionColors ?? defaultDefinitionColors
   }
 
-  presetConfig.fontColor = fontColor
-
-  if (configType === 'minwithlist') return presetConfig
-
   const tableCellProperties = {
     backgroundColors: options.templateColors ?? defaultTemplateColors
   }
 
-  presetConfig.table.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
+  presetConfig.fontColor = fontColor
   presetConfig.table.tableCellProperties = tableCellProperties
+  presetConfig.table.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
 
   return presetConfig
 }
