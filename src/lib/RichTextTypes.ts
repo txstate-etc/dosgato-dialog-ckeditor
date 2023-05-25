@@ -154,6 +154,10 @@ export const tiConfig = {
     items: [
       'bold',
       'italic',
+      'strikethrough',
+      'superscript',
+      'subscript',
+      'code',
       'removeFormat',
       'specialCharacters',
       '|',
@@ -171,32 +175,35 @@ export const tiConfig = {
       'heading',
       '|',
       'fontColor'
-    ]
+    ],
+    shouldNotGroupWhenFull: true
   }
 }
 
 export function getConfig (configType: ConfigType, options: TemplateProperties) {
-  let presetConfig
-  if (!configType) presetConfig = defaultConfig
-  else if (configType === 'min') presetConfig = minimalConfig
-  else if (configType === 'minwithlist') presetConfig = minimalConfigWithLists
-  else if (configType === 'ti') presetConfig = tiConfig
-  else presetConfig = defaultConfig
+  let config
+  if (!configType) config = defaultConfig
+  else if (configType === 'min') config = minimalConfig
+  else if (configType === 'minwithlist') config = minimalConfigWithLists
+  else if (configType === 'ti') config = tiConfig
+  else config = defaultConfig
 
-  if (configType !== 'full') return presetConfig
+  if (configType === 'min' || configType === 'minwithlist') return config
 
   const fontColor = {
     colors: options.definitionColors ?? defaultDefinitionColors
   }
+  config.fontColor = fontColor
+
+  if (configType === 'ti') return config
 
   const tableCellProperties = {
     backgroundColors: options.templateColors ?? defaultTemplateColors
   }
 
-  presetConfig.fontColor = fontColor
-  presetConfig.table.tableCellProperties = tableCellProperties
-  presetConfig.table.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
+  config.table.tableCellProperties = tableCellProperties
+  config.table.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
 
-  return presetConfig
+  return config
 }
 
