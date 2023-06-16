@@ -38,6 +38,8 @@
     return item
   })
 
+  const urlToValueCache: Record<string, string> = {}
+
   async function finalize (data: string) {
     const testEl = getParserElement()
     testEl.innerHTML = nullableSerialize(data)
@@ -49,7 +51,7 @@
         const itm = await findByUrlCache.get(href)
         if (itm) link.setAttribute('href', itm.id)
         else {
-          const value = chooserClient.urlToValue?.(href)
+          const value = urlToValueCache[href] ?? chooserClient.urlToValue?.(href)
           if (value) link.setAttribute('href', value)
         }
       }),
@@ -58,7 +60,7 @@
         const itm = await findByUrlCache.get(src)
         if (itm) image.setAttribute('src', itm.id)
         else {
-          const value = chooserClient.urlToValue?.(src)
+          const value = urlToValueCache[src] ?? chooserClient.urlToValue?.(src)
           if (value) image.setAttribute('src', value)
         }
       })
@@ -69,5 +71,5 @@
 </script>
 
 <FieldStandard bind:id {label} {helptext} {path} {required} {conditional} {finalize} let:id>
-  <RichTextEditor {id} {path} {maxlength} {configType} {templateProperties} {config} {findByIdCache} {findByUrlCache} />
+  <RichTextEditor {id} {path} {maxlength} {configType} {templateProperties} {config} {findByIdCache} {findByUrlCache} {urlToValueCache} />
 </FieldStandard>

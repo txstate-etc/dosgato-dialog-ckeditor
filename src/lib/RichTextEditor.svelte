@@ -17,6 +17,7 @@
   export let config: EditorConfig|undefined = undefined
   export let findByIdCache: Cache<string, AnyItem | undefined>
   export let findByUrlCache: Cache<string, AnyItem | undefined>
+  export let urlToValueCache: Record<string, string>
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const inheritedPath = getContext<string>(FORM_INHERITED_PATH)
@@ -140,7 +141,10 @@
           if (itm) link.setAttribute('href', itm.url)
           else {
             const url = chooserClient.valueToUrl?.(href)
-            if (url) link.setAttribute('href', url)
+            if (url) {
+              urlToValueCache[url] = href
+              link.setAttribute('href', url)
+            }
           }
         }),
         ...Array.from(images).map(async image => {
@@ -149,7 +153,10 @@
           if (itm) image.setAttribute('src', itm.url)
           else {
             const url = chooserClient.valueToUrl?.(src)
-            if (url) image.setAttribute('src', url)
+            if (url) {
+              urlToValueCache[url] = src
+              image.setAttribute('src', url)
+            }
           }
         })
       ])
