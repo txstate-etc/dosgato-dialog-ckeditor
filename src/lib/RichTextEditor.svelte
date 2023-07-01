@@ -17,7 +17,7 @@
   export let config: EditorConfig|undefined = undefined
   export let findByIdCache: Cache<string, AnyItem | undefined>
   export let findByUrlCache: Cache<string, AnyItem | undefined>
-  export let urlToValueCache: Record<string, string>
+  export let editor: ClassicEditor = undefined
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const inheritedPath = getContext<string>(FORM_INHERITED_PATH)
@@ -32,7 +32,6 @@
   const linkStore = new ChooserStore(chooserClient)
   const imageStore = new ChooserStore(chooserClient)
   let element: HTMLElement
-  let editor: ClassicEditor
   let latestChooserCB: Function
   let skipReaction = false
   let mounted = false
@@ -121,50 +120,20 @@
     } else latestChooserCB(item.url, item.name)
   }
   let charlength: number = 0
-  let reactionVersion = 0
-
-  async function reactToValue (..._: any) {
+  function reactToValue (..._: any) {
     if (!mounted) return
-    let serialized = nullableSerialize($value)
+    const serialized = nullableSerialize($value)
     if (serialized.trim().length > 0) {
       const testEl = getParserElement()
       testEl.innerHTML = serialized
       charlength = testEl.innerText.trim().length
-      if (skipReaction) return
-      const links = testEl.querySelectorAll('[href]')
-      const images = testEl.querySelectorAll('[src]')
-      const saveReactionVersion = ++reactionVersion
-      await Promise.all([
-        ...Array.from(links).map(async link => {
-          const href = link.getAttribute('href')!
-          const itm = await findByIdCache.get(href)
-          if (itm) link.setAttribute('href', itm.url)
-          else {
-            const url = chooserClient.valueToUrl?.(href)
-            if (url) {
-              urlToValueCache[url] = href
-              link.setAttribute('href', url)
-            }
-          }
-        }),
-        ...Array.from(images).map(async image => {
-          const src = image.getAttribute('src')!
-          const itm = await findByIdCache.get(src)
-          if (itm) image.setAttribute('src', itm.url)
-          else {
-            const url = chooserClient.valueToUrl?.(src)
-            if (url) {
-              urlToValueCache[url] = src
-              image.setAttribute('src', url)
-            }
-          }
-        })
-      ])
-      if (reactionVersion === saveReactionVersion) serialized = testEl.innerHTML
     }
-    if (editor && editor.getData() !== serialized) editor.setData(serialized)
+    if (skipReaction) return
+    if (editor && !editor.plugins.get('SourceEditing')?.isSourceEditingMode && editor.getData() !== serialized) {
+      editor.setData(serialized)
+    }
   }
-  $: reactToValue($value).catch(e => console.error(e))
+  $: reactToValue($value)
   $: exceeded = maxlength && maxlength > 0 && charlength > maxlength
 </script>
 

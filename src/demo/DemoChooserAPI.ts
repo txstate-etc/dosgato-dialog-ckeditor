@@ -244,7 +244,7 @@ class DemoChooserAPI implements Client {
     let ratio = 0
     for (const file of files) {
       const isImage = file.type.startsWith('image')
-      const asset: StoredAsset = { type: 'asset', id: randomid(), path: folder.path + '/' + file.name, name: file.name, mime: isImage ? 'image/png' : 'application/pdf', bytes: isImage ? 196672 : 1264, url: '/static/' + file.name }
+      const asset: StoredAsset = { type: 'asset', id: randomid(), path: folder.path + '/' + file.name, name: file.name, mime: isImage ? 'image/png' : 'application/pdf', bytes: isImage ? 196672 : 1264, url: '/static/' + file.name, extension: file.name.replace(/^.*?(\.(\w+))?$/, '$2') }
       if (isImage) {
         asset.image = {
           width: 909,
