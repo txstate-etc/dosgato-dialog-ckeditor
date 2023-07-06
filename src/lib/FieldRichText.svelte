@@ -4,7 +4,7 @@
   import { CHOOSER_API_CONTEXT, type Client, FieldStandard } from '@dosgato/dialog'
   import { nullableSerialize } from '@txstate-mws/svelte-forms'
   import { getContext } from 'svelte'
-  import { Cache, isNotBlank } from 'txstate-utils'
+  import { Cache, isBlank, isNotBlank } from 'txstate-utils'
   import RichTextEditor from './RichTextEditor.svelte'
   import type { ConfigType, TemplateProperties } from './RichTextTypes'
   import { getParserElement, getUrl } from './util'
@@ -112,7 +112,7 @@
             if (up?.tagName === 'P') {
               up.parentElement?.insertBefore(figure, up)
               figure.append(image)
-              up.remove()
+              if (isBlank(up.innerText)) up.remove()
             } else {
               up?.insertBefore(figure, image)
               figure.append(image)
