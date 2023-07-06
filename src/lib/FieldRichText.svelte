@@ -125,7 +125,7 @@
             if (float === 'right') figure!.classList.add('image-style-align-right')
           }
           const width = parseInt(image.getAttribute('width') ?? '1000', 10)
-          const newWidth = String(Math.round(1000 * Math.min(width, 750) / 750) / 10) + '%'
+          const newWidth = String(Math.round(1000 * Math.min(width, 800) / 800) / 10) + '%'
           figure!.style.width ||= newWidth
 
           image.removeAttribute('width')
