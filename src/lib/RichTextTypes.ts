@@ -86,7 +86,9 @@ export const defaultConfig = {
       'imageStyle:breakText',
       '|',
       'toggleImageCaption',
-      'imageTxtAlternative'
+      'imageTxtAlternative',
+      '|',
+      'linkImage'
     ]
   },
   table: {
@@ -212,4 +214,3 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
 
   return config
 }
-
