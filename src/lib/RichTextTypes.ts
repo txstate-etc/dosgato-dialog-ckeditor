@@ -40,6 +40,15 @@ const defaultTemplateColors: Colors[] = [
 
 const defaultDefinitionColors: string[] = ['#222222', '#501214', '#6a5638', '#363534', '#b30e1b']
 
+const listConfig = {
+  list: {
+    properties: {
+      styles: false,
+      startIndex: true
+    }
+  }
+}
+
 export const defaultConfig = {
   toolbar: {
     items: [
@@ -115,7 +124,8 @@ export const defaultConfig = {
         { label: 'Both', value: 'both' }
       ]
     }
-  }
+  },
+  ...listConfig
 }
 
 export const minimalConfig = {
@@ -149,7 +159,8 @@ export const minimalConfigWithLists = {
       'sourceEditing'
     ],
     shouldNotGroupWhenFull: true
-  }
+  },
+  ...listConfig
 }
 
 export const tiConfig = {
@@ -185,7 +196,8 @@ export const tiConfig = {
       'fontColor'
     ],
     shouldNotGroupWhenFull: true
-  }
+  },
+  ...listConfig
 }
 
 export function getConfig (configType: ConfigType, options: TemplateProperties) {
