@@ -1,7 +1,7 @@
 <script lang="ts">
   import alertOutline from '@iconify-icons/mdi/alert-outline.js'
-  import type { EditorConfig } from '@ckeditor/ckeditor5-core/src/editor/editorconfig'
-  import type ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
+  import type { EditorConfig } from '@ckeditor/ckeditor5-core'
+  import type { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic'
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, Icon, type Client, type AnyUIItem, type Folder, type AnyItem } from '@dosgato/dialog'
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onDestroy, onMount, tick } from 'svelte'

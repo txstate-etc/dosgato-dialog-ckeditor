@@ -1,7 +1,7 @@
 {
   "name": "@dosgato/dialog-ckeditor",
   "description": "A form control that provides an instance of CKEditor. Designed to be compatible with @dosgato/dialog.",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "./dist/index.js",
   "exports": {
     ".": {
@@ -28,6 +28,8 @@
     "txstate-utils": "^1.8.3"
   },
   "devDependencies": {
+    "@ckeditor/ckeditor5-core": "^35.0.0",
+    "@ckeditor/ckeditor5-editor-classic": "^35.4.0",
     "@sveltejs/adapter-auto": "^2.0.0",
     "@sveltejs/kit": "^1.0.0",
     "@sveltejs/package": "^2.0.0",

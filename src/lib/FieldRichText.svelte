@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { EditorConfig } from '@ckeditor/ckeditor5-core/src/editor/editorconfig'
-  import type ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor'
+  import type { EditorConfig } from '@ckeditor/ckeditor5-core'
+  import type { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic'
   import { CHOOSER_API_CONTEXT, type Client, FieldStandard } from '@dosgato/dialog'
   import { nullableSerialize } from '@txstate-mws/svelte-forms'
   import { getContext } from 'svelte'

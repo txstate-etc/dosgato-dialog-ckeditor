@@ -8,5 +8,5 @@ export function getParserElement () {
 }
 
 export function getUrl (item: AnyItem) {
-  return ('image' in item && isNotBlank(item.image?.previewUrl)) ? item.image!.previewUrl : item.url
+  return ('image' in item && isNotBlank(item.image?.previewUrl)) ? item.image.previewUrl : item.url
 }
