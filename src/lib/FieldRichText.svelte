@@ -20,6 +20,7 @@
   export let config: EditorConfig|undefined = undefined
   export let helptext: string | undefined = undefined
   export let editor: ClassicEditor = undefined
+  export let compact: boolean = false
 
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
 
@@ -145,6 +146,6 @@
 
 {#if !ssr}
   <FieldStandard bind:id {label} {helptext} {path} {required} {conditional} {finalize} {initialize} let:id>
-    <RichTextEditor bind:editor {id} {path} {maxlength} {configType} {templateProperties} {config} {findByIdCache} {findByUrlCache} />
+    <RichTextEditor bind:editor {id} {path} {maxlength} {configType} {templateProperties} {config} {findByIdCache} {findByUrlCache} {compact} />
   </FieldStandard>
 {/if}

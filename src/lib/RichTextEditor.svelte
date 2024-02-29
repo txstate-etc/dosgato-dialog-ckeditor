@@ -18,6 +18,7 @@
   export let findByIdCache: Cache<string, AnyItem | undefined>
   export let findByUrlCache: Cache<string, AnyItem | undefined>
   export let editor: ClassicEditor = undefined
+  export let compact: boolean = false
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const inheritedPath = getContext<string>(FORM_INHERITED_PATH)
@@ -138,7 +139,7 @@
 </script>
 
 <div id={editorId}>
-  <div class="dialog-rich-ckeditor" bind:this={element}></div>
+  <div class="dialog-rich-ckeditor" class:compact bind:this={element}></div>
 </div>
 {#if maxlength}
   <div class="dialog-rich-charcount">
@@ -168,6 +169,11 @@
     min-height: 400px;
     max-height: 75vh;
     overflow: auto;
+  }
+
+  .dialog-rich-ckeditor.compact + :global(.ck-editor .ck-content) {
+    min-height: 150px;
+    resize: vertical;
   }
 
   :global(.ck-content figure.table) {
