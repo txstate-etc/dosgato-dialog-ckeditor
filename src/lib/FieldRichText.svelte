@@ -20,7 +20,7 @@
   export let config: EditorConfig|undefined = undefined
   export let helptext: string | undefined = undefined
   export let editor: ClassicEditor = undefined
-  export let compact: boolean = false
+  export let compact: boolean = !maxlength || maxlength < 400
 
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
 
