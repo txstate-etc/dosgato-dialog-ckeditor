@@ -128,6 +128,8 @@
       const testEl = getParserElement()
       testEl.innerHTML = serialized
       charlength = testEl.innerText.trim().length
+    } else {
+      charlength = 0
     }
     if (skipReaction) return
     if (editor && !editor.plugins.get('SourceEditing')?.isSourceEditingMode && editor.getData() !== serialized) {
