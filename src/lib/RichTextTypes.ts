@@ -49,6 +49,19 @@ const listConfig = {
   }
 }
 
+// The large text option is available but should not be part of the default configuration
+const headingConfig = {
+  heading: {
+    options: [
+      { title: 'Paragraph', model: 'paragraph', class: 'ck-heading_paragraph' },
+      { title: 'Title', view: 'h2', model: 'heading2', class: 'ck-heading_heading2' },
+      { title: 'Subtitle', view: 'h3', model: 'heading3', class: 'ck-heading_heading3' },
+      { title: 'Subsubtitle', view: 'h4', model: 'heading4', class: 'ck-heading_heading4' },
+      { title: 'Preformatted Text', view: 'pre', model: 'preformattedText', class: 'ck-heading-preformattedText' }
+    ]
+  }
+}
+
 export const defaultConfig = {
   toolbar: {
     items: [
@@ -125,7 +138,8 @@ export const defaultConfig = {
       ]
     }
   },
-  ...listConfig
+  ...listConfig,
+  ...headingConfig
 }
 
 export const minimalConfig = {
@@ -197,7 +211,8 @@ export const tiConfig = {
     ],
     shouldNotGroupWhenFull: true
   },
-  ...listConfig
+  ...listConfig,
+  ...headingConfig
 }
 
 export function getConfig (configType: ConfigType, options: TemplateProperties) {
