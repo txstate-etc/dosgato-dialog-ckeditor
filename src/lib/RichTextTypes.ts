@@ -15,6 +15,7 @@ export interface TemplateProperties {
   tableHeaderColors?: Colors[]
   templateColors?: Colors[]
   definitionColors?: string[]
+  fontFamilies?: string[]
 }
 
 const defaultHeaderColors: ColorClasses[] = [
@@ -238,6 +239,12 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
 
   config.table.tableCellProperties = tableCellProperties
   config.table.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
+
+  if (options.fontFamilies?.length) {
+    config.fontFamily = {
+      options: options.fontFamilies
+    }
+  }
 
   return config
 }
