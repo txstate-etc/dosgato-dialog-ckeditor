@@ -231,6 +231,13 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
   }
   config.fontColor = fontColor
 
+  if (options.fontFamilies?.length) {
+    config.fontFamily = {
+      options: options.fontFamilies
+    }
+    config.toolbar.items.push('fontFamily')
+  }
+
   if (configType === 'ti') return config
 
   const tableCellProperties = {
@@ -239,12 +246,6 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
 
   config.table.tableCellProperties = tableCellProperties
   config.table.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
-
-  if (options.fontFamilies?.length) {
-    config.fontFamily = {
-      options: options.fontFamilies
-    }
-  }
 
   return config
 }
