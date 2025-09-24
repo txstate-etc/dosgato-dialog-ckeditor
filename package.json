@@ -33,7 +33,7 @@
     "@sveltejs/adapter-auto": "^6.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
-    "eslint-config-standard-with-typescript": "^34.0.0",
+    "eslint-config-standard-with-typescript": "^43.0.0",
     "eslint-plugin-svelte": "^3.0.0",
     "sass": "^1.58.0",
     "svelte-check": "^4.0.0",
