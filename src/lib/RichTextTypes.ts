@@ -238,6 +238,12 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
     if (!config.toolbar.items.includes('fontFamily')) {
       config.toolbar.items.push('fontFamily')
     }
+  } else {
+    const fontFamilyIndex = config.toolbar.items.indexOf('fontFamily')
+    if (fontFamilyIndex !== -1) {
+      config.toolbar.items.splice(fontFamilyIndex, 1)
+    }
+    delete config.fontFamily
   }
 
   if (configType === 'ti') return config
