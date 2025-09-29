@@ -17,7 +17,6 @@
   }
 
   async function validate (data): Promise<Feedback[]> {
-    console.log(data)
     return [{
       type: 'error',
       message: 'Nope',
@@ -42,6 +41,10 @@
     </figure>
   `
   }
+
+  const templateProperties = {
+    fontFamilies: ['"Comic Sans MS", "Comic Sans", cursive']
+  }
 </script>
 
 <svelte:head><title>DosGato Dialog Example</title></svelte:head>
@@ -51,7 +54,7 @@
 <main>
 {#if showdialog}
   <FormDialog bind:store {preload} {submit} {validate} chooserClient={demoChooserAPI} let:saved on:escape={escape}>
-    <FieldRichText path="richtext" label="Rich Text" maxlength={10} />
+    <FieldRichText path="richtext" label="Rich Text" maxlength={10} {templateProperties}/>
     {#if saved}Save successful!{/if}
     <FieldRichText path="richtext2" conditional={false} label="Rich Text" maxlength={10} />
   </FormDialog>

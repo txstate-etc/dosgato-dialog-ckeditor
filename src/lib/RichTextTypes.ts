@@ -233,9 +233,11 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
 
   if (options.fontFamilies?.length) {
     config.fontFamily = {
-      options: options.fontFamilies
+      options: ['default', ...options.fontFamilies]
     }
-    config.toolbar.items.push('fontFamily')
+    if (!config.toolbar.items.includes('fontFamily')) {
+      config.toolbar.items.push('fontFamily')
+    }
   }
 
   if (configType === 'ti') return config
