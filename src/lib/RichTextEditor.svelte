@@ -109,7 +109,7 @@
     }
   }
   async function chooserComplete (e: any) {
-    const item: Exclude<AnyUIItem, Folder> = e.detail
+    const item: Exclude<AnyUIItem, Folder> = e.detail.preview
     findByIdCache.set(item.id, item)
     findByUrlCache.set(item.url, item)
     if ('image' in item && isNotBlank(item.image?.previewUrl)) findByUrlCache.set(item.image!.previewUrl, item)
@@ -154,9 +154,9 @@
   </div>
 {/if}
 {#if modaltoshow === 'image'}
-  <Chooser store={imageStore} images label="Insert Image" on:change={chooserComplete} on:escape={hide} />
+  <Chooser store={imageStore} images label="Insert Image" on:change={chooserComplete} on:escape={hide} showAltTextOption={false} />
 {:else if modaltoshow === 'link'}
-  <Chooser store={linkStore} pages assets label="Browse for Link" on:change={chooserComplete} on:escape={hide} />
+  <Chooser store={linkStore} pages assets label="Browse for Link" on:change={chooserComplete} on:escape={hide} showAltTextOption={false} />
 {/if}
 
 <style>
