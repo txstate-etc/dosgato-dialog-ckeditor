@@ -16,6 +16,13 @@ export interface TemplateProperties {
   templateColors?: Colors[]
   definitionColors?: string[]
   fontFamilies?: string[]
+  headingOptions?: {
+    title: string
+    model: string
+    view?: { name: string, classes: string } | string
+    class: string
+    converterPriority?: string
+  }[]
 }
 
 const defaultHeaderColors: ColorClasses[] = [
@@ -244,6 +251,17 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
       config.toolbar.items.splice(fontFamilyIndex, 1)
     }
     delete config.fontFamily
+  }
+
+  if (options.headingOptions?.length) {
+    config.heading = {
+      options: options.headingOptions
+    }
+    if (!config.toolbar.items.includes('heading')) {
+      config.toolbar.items.push('heading')
+    }
+  } else {
+    config = { ...config, headingConfig }
   }
 
   if (configType === 'ti') return config
