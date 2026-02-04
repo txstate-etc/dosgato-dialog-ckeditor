@@ -52,6 +52,8 @@
     await Promise.all([
       ...Array.from(links).map(async link => {
         const href = link.getAttribute('href')!
+        // no need to process data URLs
+        if (href.startsWith('data:')) return
         const itm = await findByUrlCache.get(href)
         if (itm) link.setAttribute('href', itm.id)
         else {
@@ -61,6 +63,8 @@
       }),
       ...Array.from(images).map(async image => {
         const src = image.getAttribute('src')!
+        // no need to process data URLs
+        if (src.startsWith('data:')) return
         const itm = await findByUrlCache.get(src)
         if (itm) image.setAttribute('src', itm.id)
         else {
@@ -80,6 +84,8 @@
     await Promise.all([
       ...Array.from(links).map(async link => {
         const href = link.getAttribute('href')!
+        // no need to process data URLs
+        if (href.startsWith('data:')) return
         const itm = await findByIdCache.get(href)
         if (itm) link.setAttribute('href', getUrl(itm))
         else {
@@ -92,6 +98,8 @@
       }),
       ...Array.from(images).map(async (image: HTMLImageElement) => {
         const src = image.getAttribute('src')!
+        // no need to process data URLs
+        if (src.startsWith('data:')) return
         const itm = await findByIdCache.get(src)
         if (itm) image.setAttribute('src', getUrl(itm))
         else {
