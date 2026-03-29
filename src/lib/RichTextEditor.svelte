@@ -1,5 +1,5 @@
 <script lang="ts">
-  import alertOutline from '@iconify-icons/mdi/alert-outline.js'
+  import alertOutline from '@iconify-icons/mdi/alert-outline'
   import type { EditorConfig } from '@ckeditor/ckeditor5-core'
   import type { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic'
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, Icon, type Client, type AnyUIItem, type Folder, type AnyItem } from '@dosgato/dialog'
