@@ -36,26 +36,35 @@
   let latestChooserCB: Function
   let skipReaction = false
   let mounted = false
+  let destroyed = false
   onMount(async () => {
     mounted = true
     const Editor = (await import('@dosgato/ckeditor')).default as typeof ClassicEditor
-    editor = await Editor.create(element, {
-      ...presetConfig,
-      ...config,
-      assetBrowser: {
-        browseImage: async (next: (imageUrl: string) => void) => {
-          imageStore.update(v => ({ ...v, preview: undefined }))
-          latestChooserCB = next
-          show('image')
-        },
-        browseLink: async (linkUrl, next: (linkUrl: string) => void) => {
-          const item = await findByUrlCache.get(linkUrl)
-          if (item) linkStore.setPreview(item)
-          latestChooserCB = next
-          show('link')
+    try {
+      editor = await Editor.create(element, {
+        ...presetConfig,
+        ...config,
+        assetBrowser: {
+          browseImage: async (next: (imageUrl: string) => void) => {
+            imageStore.update(v => ({ ...v, preview: undefined }))
+            latestChooserCB = next
+            show('image')
+          },
+          browseLink: async (linkUrl, next: (linkUrl: string) => void) => {
+            const item = await findByUrlCache.get(linkUrl)
+            if (item) linkStore.setPreview(item)
+            latestChooserCB = next
+            show('link')
+          }
         }
-      }
-    } as any)
+      } as any)
+    } catch (e) {
+      return
+    }
+    if (destroyed) {
+      try { editor.destroy().catch(() => {}) } catch (e) {}
+      return
+    }
     editor.ui.focusTracker.on('change:isFocused', (evt, name, isFocused) => { if (!isFocused) formStore.dirtyField(finalPath) })
     editor.model.document.on('change:data', () => {
       skipReaction = true
@@ -81,8 +90,8 @@
     }
   })
   onDestroy(() => {
-    // onDestroy runs in SSR but we don't create editor in SSR
-    editor?.destroy()
+    destroyed = true
+    try { editor?.destroy().catch(() => {}) } catch (e) {}
   })
 
   function setModalZ () {
