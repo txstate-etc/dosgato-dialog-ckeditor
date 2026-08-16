@@ -11,15 +11,15 @@
 
   export let id: string | undefined = undefined
   export let path: string
-  export let label: string = ''
-  export let maxlength: number|undefined = undefined
-  export let conditional: boolean|undefined = undefined
+  export let label = ''
+  export let maxlength: number | undefined = undefined
+  export let conditional: boolean | undefined = undefined
   export let required = false
   export let configType: ConfigType = 'full'
   export let templateProperties: TemplateProperties = {}
-  export let config: EditorConfig|undefined = undefined
+  export let config: EditorConfig | undefined = undefined
   export let helptext: string | undefined = undefined
-  export let editor: ClassicEditor = undefined
+  export let editor: ClassicEditor | undefined = undefined
   export let compact: boolean = !maxlength || maxlength < 400
 
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
@@ -28,8 +28,8 @@
     if (!id) return
     const item = await chooserClient?.findById(id)
     if (item) {
-      findByUrlCache.set(item.url, item)
-      if ('image' in item && isNotBlank(item.image?.previewUrl)) findByUrlCache.set(item.image!.previewUrl, item)
+      void findByUrlCache.set(item.url, item)
+      if ('image' in item && isNotBlank(item.image?.previewUrl)) void findByUrlCache.set(item.image.previewUrl, item)
     }
     return item
   })
@@ -37,14 +37,14 @@
   const findByUrlCache = new Cache(async (url: string) => {
     if (!url) return
     const item = await chooserClient?.findByUrl?.(url)
-    if (item) findByIdCache.set(item.id, item)
+    if (item) void findByIdCache.set(item.id, item)
     return item
   })
 
   const urlToValueCache: Record<string, string> = {}
 
-  async function finalize (data: string, isSubmit: boolean) {
-    if (isSubmit && editor?.plugins.get('SourceEditing')?.isSourceEditingMode) throw new Error('You cannot save while editing source in a rich editor. Click the Source button again to return to regular editing mode.')
+  async function finalize (data: string, isSubmit?: boolean) {
+    if (isSubmit && (editor?.plugins.get('SourceEditing') as any)?.isSourceEditingMode) throw new Error('You cannot save while editing source in a rich editor. Click the Source button again to return to regular editing mode.')
     const testEl = getParserElement()
     testEl.innerHTML = nullableSerialize(data)
     const links = testEl.querySelectorAll('[href]')
@@ -80,7 +80,7 @@
     const testEl = getParserElement()
     testEl.innerHTML = nullableSerialize(data)
     const links = testEl.querySelectorAll('[href]')
-    const images = testEl.querySelectorAll('[src]')
+    const images = testEl.querySelectorAll<HTMLImageElement>('[src]')
     await Promise.all([
       ...Array.from(links).map(async link => {
         const href = link.getAttribute('href')!
@@ -96,7 +96,7 @@
           }
         }
       }),
-      ...Array.from(images).map(async (image: HTMLImageElement) => {
+      ...Array.from(images).map(async image => {
         const src = image.getAttribute('src')!
         // no need to process data URLs
         if (src.startsWith('data:')) return

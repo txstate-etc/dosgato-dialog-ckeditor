@@ -8,7 +8,7 @@
 
   let showdialog = true
 
-  async function submit (data) {
+  async function submit (data: any) {
     return {
       success: false,
       data,
@@ -16,7 +16,7 @@
     }
   }
 
-  async function validate (data): Promise<Feedback[]> {
+  async function validate (data: any): Promise<Feedback[]> {
     return [{
       type: 'error',
       message: 'Nope',

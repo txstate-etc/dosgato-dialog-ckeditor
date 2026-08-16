@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
+/* eslint-disable @typescript-eslint/consistent-type-assertions -- demo data uses loose assertions to simulate a server */
 import type { Asset, ChooserType, Client, Folder, Page, Source, AnyItem, TypedTreeItem } from '@dosgato/dialog'
 import { randomid } from 'txstate-utils'
 
@@ -144,7 +144,7 @@ const assets: Record<string, RootFolder | RootPage> = {
         hasChildren: false
       }
     ]
-  } as RootPage
+  }
 }
 
 class DemoChooserAPI implements Client {
@@ -237,7 +237,8 @@ class DemoChooserAPI implements Client {
 
   /** If a folder corresponds to `path` under `source` this will build StoredAsset objects from the `files` passed and simulate adding them to that folder's children in memory.
    * @throws 'User may not upload to this folder` error if that folder doesn't acceptUpload. */
-  async upload (folder: TypedTreeItem<Folder>, files: File[], progress: (ratio: number) => void) {
+  async upload (f: Folder, files: File[], progress: (ratio: number) => void) {
+    const folder = f as TypedTreeItem<Folder>
     if (!folder?.acceptsUpload) throw new Error('User may not upload to this folder')
     folder.children ??= []
     const inc = 1 / files.length

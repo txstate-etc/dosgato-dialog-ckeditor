@@ -5,20 +5,20 @@
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, Icon, type Client, type AnyUIItem, type Folder, type AnyItem } from '@dosgato/dialog'
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
-  import { Cache, isNotBlank, randomid } from 'txstate-utils'
+  import { type Cache, isNotBlank, randomid } from 'txstate-utils'
   import { getParserElement } from './util'
   import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
   export let id: string | undefined = undefined
   export let path: string
-  export let maxlength: number|undefined = undefined
+  export let maxlength: number | undefined = undefined
   export let configType: ConfigType = 'full'
   export let templateProperties: TemplateProperties = {}
-  export let config: EditorConfig|undefined = undefined
+  export let config: EditorConfig | undefined = undefined
   export let findByIdCache: Cache<string, AnyItem | undefined>
   export let findByUrlCache: Cache<string, AnyItem | undefined>
-  export let editor: ClassicEditor = undefined
-  export let compact: boolean = false
+  export let editor: ClassicEditor | undefined = undefined
+  export let compact = false
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const inheritedPath = getContext<string>(FORM_INHERITED_PATH)
@@ -33,13 +33,13 @@
   const linkStore = new ChooserStore(chooserClient)
   const imageStore = new ChooserStore(chooserClient)
   let element: HTMLElement
-  let latestChooserCB: Function
+  let latestChooserCB: (url: string, name?: string) => void
   let skipReaction = false
   let mounted = false
   let destroyed = false
   onMount(async () => {
     mounted = true
-    const Editor = (await import('@dosgato/ckeditor')).default as typeof ClassicEditor
+    const Editor = (await import('@dosgato/ckeditor')).default
     try {
       editor = await Editor.create(element, {
         ...presetConfig,
@@ -50,14 +50,14 @@
             latestChooserCB = next
             show('image')
           },
-          browseLink: async (linkUrl, next: (linkUrl: string) => void) => {
+          browseLink: async (linkUrl: string, next: (linkUrl: string) => void) => {
             const item = await findByUrlCache.get(linkUrl)
             if (item) linkStore.setPreview(item)
             latestChooserCB = next
             show('link')
           }
         }
-      } as any)
+      })
     } catch (e) {
       return
     }
@@ -68,10 +68,10 @@
     editor.ui.focusTracker.on('change:isFocused', (evt, name, isFocused) => { if (!isFocused) formStore.dirtyField(finalPath) })
     editor.model.document.on('change:data', () => {
       skipReaction = true
-      formStore.setField(finalPath, nullableDeserialize(editor.getData()))
-      tick().then(() => { skipReaction = false })
+      void formStore.setField(finalPath, nullableDeserialize(editor!.getData()))
+      void tick().then(() => { skipReaction = false })
     })
-    await reactToValue()
+    reactToValue()
     setModalZ()
 
     // removing CKEditor 5 hardcoded sr-only label
@@ -100,10 +100,10 @@
     document.documentElement.style.setProperty('--ck-z-modal', String(Number(modalz) + 1 || '1'))
   }
 
-  let modaltoshow: 'link'|'image'|undefined = undefined
-  let saveselection
-  function show (toshow: 'link'|'image') {
-    saveselection = editor.model.document.selection
+  let modaltoshow: 'link' | 'image' | undefined = undefined
+  let saveselection: ClassicEditor['model']['document']['selection'] | undefined
+  function show (toshow: 'link' | 'image') {
+    saveselection = editor!.model.document.selection
     modaltoshow = toshow
     setModalZ()
   }
@@ -111,25 +111,26 @@
     modaltoshow = undefined
     await tick()
     await tick()
-    if (saveselection) {
-      editor.model.change(writer => {
-        writer.setSelection(saveselection)
+    const selection = saveselection
+    if (selection) {
+      editor?.model.change(writer => {
+        writer.setSelection(selection)
       })
     }
   }
   async function chooserComplete (e: any) {
     const item: Exclude<AnyUIItem, Folder> = e.detail.preview
-    findByIdCache.set(item.id, item)
-    findByUrlCache.set(item.url, item)
-    if ('image' in item && isNotBlank(item.image?.previewUrl)) findByUrlCache.set(item.image!.previewUrl, item)
+    void findByIdCache.set(item.id, item)
+    void findByUrlCache.set(item.url, item)
+    if ('image' in item && isNotBlank(item.image?.previewUrl)) void findByUrlCache.set(item.image.previewUrl, item)
     modaltoshow = undefined
     await tick()
     await tick()
     if ('image' in item && isNotBlank(item.image?.previewUrl)) {
-      latestChooserCB(item.image!.previewUrl, item.name)
+      latestChooserCB(item.image.previewUrl, item.name)
     } else latestChooserCB(item.url, item.name)
   }
-  let charlength: number = 0
+  let charlength = 0
   function reactToValue (..._: any) {
     if (!mounted) return
     const serialized = nullableSerialize($value)
@@ -141,7 +142,7 @@
       charlength = 0
     }
     if (skipReaction) return
-    if (editor && !editor.plugins.get('SourceEditing')?.isSourceEditingMode && editor.getData() !== serialized) {
+    if (editor && !(editor.plugins.get('SourceEditing') as any)?.isSourceEditingMode && editor.getData() !== serialized) {
       editor.setData(serialized)
     }
   }

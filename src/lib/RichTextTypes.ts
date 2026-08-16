@@ -1,5 +1,10 @@
 export type ConfigType = 'full' | 'min' | 'minwithlist' | 'ti'
 
+export interface RichTextConfig {
+  toolbar: { items: string[], shouldNotGroupWhenFull?: boolean }
+  [key: string]: any
+}
+
 export interface ColorClasses {
   label: string
   value: string
@@ -70,7 +75,7 @@ const headingConfig = {
   }
 }
 
-export const defaultConfig = {
+export const defaultConfig: RichTextConfig = {
   toolbar: {
     items: [
       'bold',
@@ -150,7 +155,7 @@ export const defaultConfig = {
   ...headingConfig
 }
 
-export const minimalConfig = {
+export const minimalConfig: RichTextConfig = {
   toolbar: {
     items: [
       'bold',
@@ -163,7 +168,7 @@ export const minimalConfig = {
   }
 }
 
-export const minimalConfigWithLists = {
+export const minimalConfigWithLists: RichTextConfig = {
   toolbar: {
     items: [
       'bold',
@@ -185,7 +190,7 @@ export const minimalConfigWithLists = {
   ...listConfig
 }
 
-export const tiConfig = {
+export const tiConfig: RichTextConfig = {
   toolbar: {
     items: [
       'bold',
@@ -224,7 +229,7 @@ export const tiConfig = {
 }
 
 export function getConfig (configType: ConfigType, options: TemplateProperties) {
-  let config
+  let config: RichTextConfig
   if (!configType) config = defaultConfig
   else if (configType === 'min') config = minimalConfig
   else if (configType === 'minwithlist') config = minimalConfigWithLists
@@ -261,7 +266,7 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
       config.toolbar.items.push('heading')
     }
   } else {
-    config = { ...config, headingConfig }
+    config = { ...config, ...headingConfig }
   }
 
   if (configType === 'ti') return config
