@@ -1,7 +1,6 @@
 <script lang="ts">
   import alertOutline from '@iconify-icons/mdi/alert-outline'
-  import type { EditorConfig } from '@ckeditor/ckeditor5-core'
-  import type { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic'
+  import type { ClassicEditor, EditorConfig } from 'ckeditor5'
   import { CHOOSER_API_CONTEXT, ChooserStore, Chooser, Icon, type Client, type AnyUIItem, type Folder, type AnyItem } from '@dosgato/dialog'
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
@@ -19,6 +18,8 @@
   export let findByUrlCache: Cache<string, AnyItem | undefined>
   export let editor: ClassicEditor | undefined = undefined
   export let compact = false
+  /** Drop GeneralHtmlSupport so only markup a dedicated editor feature understands survives. */
+  export let strictHtml = false
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
   const inheritedPath = getContext<string>(FORM_INHERITED_PATH)
@@ -34,25 +35,35 @@
   const imageStore = new ChooserStore(chooserClient)
   let element: HTMLElement
   let latestChooserCB: (url: string, name?: string) => void
+  // item the Chooser should open on; see preselectIn()
+  let preselect: AnyItem | undefined
   let skipReaction = false
   let mounted = false
   let destroyed = false
+  let sourceFlushTimer: ReturnType<typeof setTimeout> | undefined
   onMount(async () => {
     mounted = true
-    const Editor = (await import('@dosgato/ckeditor')).default
+    const Editor = (await import('./editor.js')).default
     try {
       editor = await Editor.create(element, {
         ...presetConfig,
         ...config,
+        removePlugins: [...(config?.removePlugins ?? []), ...(strictHtml ? ['GeneralHtmlSupport'] : [])],
         assetBrowser: {
-          browseImage: async (next: (imageUrl: string) => void) => {
-            imageStore.update(v => ({ ...v, preview: undefined }))
+          browseImage: async (imageUrl: string | undefined, next: (imageUrl: string) => void) => {
+            const item = imageUrl ? await findByUrlCache.get(imageUrl) : undefined
+            if (item) preselectIn(imageStore, item)
+            else {
+              preselect = undefined
+              imageStore.update(v => ({ ...v, preview: undefined }))
+            }
             latestChooserCB = next
             show('image')
           },
           browseLink: async (linkUrl: string, next: (linkUrl: string) => void) => {
             const item = await findByUrlCache.get(linkUrl)
-            if (item) linkStore.setPreview(item)
+            if (item) preselectIn(linkStore, item)
+            else preselect = undefined
             latestChooserCB = next
             show('link')
           }
@@ -70,6 +81,16 @@
       skipReaction = true
       void formStore.setField(finalPath, nullableDeserialize(editor!.getData()))
       void tick().then(() => { skipReaction = false })
+    })
+    // typing in the source view only updates its textarea, so change:data stays quiet until
+    // source mode is left; getData() flushes the textarea into the model, which fires it
+    const sourceEditing = editor.plugins.get('SourceEditing') as any
+    editor.ui.element!.addEventListener('input', () => {
+      if (!sourceEditing?.isSourceEditingMode) return
+      clearTimeout(sourceFlushTimer)
+      sourceFlushTimer = setTimeout(() => {
+        if (!destroyed && sourceEditing.isSourceEditingMode) editor!.getData()
+      }, 300)
     })
     reactToValue()
     setModalZ()
@@ -91,13 +112,26 @@
   })
   onDestroy(() => {
     destroyed = true
+    clearTimeout(sourceFlushTimer)
     try { editor?.destroy().catch(() => {}) } catch (e) {}
   })
 
   function setModalZ () {
     const modalz = getComputedStyle(element).getPropertyValue('--modal-z')
     document.documentElement.style.setProperty('--ck-z-default', modalz || '1')
-    document.documentElement.style.setProperty('--ck-z-modal', String(Number(modalz) + 1 || '1'))
+    document.documentElement.style.setProperty('--ck-z-panel', String(Number(modalz) + 1 || '1'))
+  }
+
+  /**
+   * The Chooser can't be preselected with setPreview: its `$: setPreview($selected)`
+   * clears the preview before it mounts. On mount it prefers the tree's leftover
+   * selection over initialPath, so drop that selection and let initialPath (passed
+   * from `preselect`) expand to and select the item.
+   */
+  function preselectIn (store: ChooserStore, item: AnyItem) {
+    store.treeStore.deselect()
+    store.clearPreview()
+    preselect = item
   }
 
   let modaltoshow: 'link' | 'image' | undefined = undefined
@@ -164,9 +198,9 @@
   </div>
 {/if}
 {#if modaltoshow === 'image'}
-  <Chooser store={imageStore} images label="Insert Image" on:change={chooserComplete} on:escape={hide} showAltTextOption={false} />
+  <Chooser store={imageStore} images label="Insert Image" initialSource={preselect?.source} initialPath={preselect?.path} on:change={chooserComplete} on:escape={hide} showAltTextOption={false} />
 {:else if modaltoshow === 'link'}
-  <Chooser store={linkStore} pages assets label="Browse for Link" on:change={chooserComplete} on:escape={hide} showAltTextOption={false} />
+  <Chooser store={linkStore} pages assets label="Browse for Link" initialSource={preselect?.source} initialPath={preselect?.path} on:change={chooserComplete} on:escape={hide} showAltTextOption={false} />
 {/if}
 
 <style>

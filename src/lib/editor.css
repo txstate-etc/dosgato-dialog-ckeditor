@@ -1,0 +1,37 @@
+.ck.ck-button.ck-heading-preformattedText span {
+  font-family: monospace;
+}
+.ck.ck-button.ck-heading_paragraph_large span, p.large-text {
+  font-size: large;
+}
+.ck.ck-button.ck-heading-superscript span {
+  vertical-align: super;
+  font-size: smaller;
+}
+.ck.ck-button.ck-heading-subscript  span{
+  vertical-align: sub;
+  font-size: smaller;
+}
+.ck.ck-button.ck-heading-strikeout span {
+  text-decoration: line-through;
+}
+.ck.ck-button.ck-heading-code span {
+  font-family: monospace;
+}
+
+figure.image + figure.image.image-style-align-right, figure.image + figure.image.image-style-align-left {
+  margin-top: 0;
+}
+
+.ck-horizontal-line {
+  clear: both;
+}
+
+.ck-editor__editable:not(.ck-read-only) .asset-link {
+  pointer-events: none;
+}
+
+/* the stock Insert button moves to its own bottom row (see linkbrowser.ts) */
+.ck.ck-link-form .ck.ck-form__row.dg-link-form-save {
+  justify-content: flex-end;
+}

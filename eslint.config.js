@@ -96,7 +96,7 @@ export default [
     ...customConfig
   },
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'test/**/*.ts'],
     languageOptions: {
       ...love.languageOptions,
       parserOptions: {
