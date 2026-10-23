@@ -35,7 +35,7 @@ editor?: ClassicEditor // bind:editor if you need the instance
 
 ### Site palettes
 
-Out of the box the editor knows nothing about your site's colors. Font and table cell colors use CKEditor's stock palette, and the table header color dropdown only offers "None" (`header-color-none`) and "Default" (`header-color-default`). Since header colors are class names, your site CSS has to style them for them to do anything.
+Out of the box the editor knows nothing about your site's colors. Font and table cell colors use CKEditor's stock palette. There is no fallback for table header colors: they're class names that only your site CSS styles, so without `tableHeaderColors` the table form has no header color dropdown and any `header-color-*` classes in existing content are dropped when it loads.
 
 To offer your own, pass `templateProperties`:
 
@@ -45,12 +45,14 @@ const templateProperties = {
   templateColors: [{ label: 'Maroon', color: '#501214' }], // table cell background colors
   tableHeaderColors: [ // classes added to the table's figure
     { label: 'None', value: 'header-color-none' },
-    { label: 'Maroon', value: 'header-color-maroon', default: true }
+    { label: 'Maroon', value: 'header-color-maroon', default: true, color: '#501214' }
   ],
   fontFamilies: ['Georgia, serif'], // adds a font family dropdown
   headingOptions: [...] // replaces the heading dropdown, same shape as CKEditor's heading.options
 }
 ```
+
+Mark the header color your site gives a table without any header color class as `default`. The dropdown shows it for those tables, and picking it removes the header color class rather than writing its own. Every other entry writes its class, including "None" if you offer one (a site that styles header cells by default needs a class like `header-color-none` to turn that off). `color` is optional and only used to preview the header row in the editor, which doesn't load your site's CSS. Without it, the preview uses the `templateColors` entry with the same label (for a label like "Default (Gold)", the part in parentheses).
 
 The `min` and `minwithlist` presets ignore all of this, and `ti` ignores the table options because it has no tables.
 

@@ -1,9 +1,10 @@
 /**
  * The DosGato CKEditor build, written against the single `ckeditor5` package
- * (PLAN.md chunk 3). Stock plugins plus three custom ones: AssetBrowser and
- * LinkBrowser (the host browse hooks) and TableClassProperties (class-based
- * semantic table properties, PLAN.md chunk 5). Import this module dynamically
- * so the editor stays code-split.
+ * (PLAN.md chunk 3). Stock plugins plus four custom ones: AssetBrowser and
+ * LinkBrowser (the host browse hooks), TableClassProperties (class-based
+ * semantic table properties, PLAN.md chunk 5) and TableCellPropertiesTrimmedUI
+ * (stock cell properties cut down to background color and text alignment). Import this module
+ * dynamically so the editor stays code-split.
  */
 import {
   Alignment, Autoformat, BlockQuote, Bold, Bookmark, ClassicEditor, Code, Essentials, Font,
@@ -11,13 +12,14 @@ import {
   ImageStyle, ImageTextAlternative, ImageToolbar, Indent, IndentBlock, Italic,
   Link, LinkImage, List, ListProperties, Paragraph, PasteFromOffice, RemoveFormat,
   SourceEditing, SpecialCharacters, SpecialCharactersEssentials, Strikethrough,
-  Subscript, Superscript, Table, TableCellProperties, TablePropertiesEditing,
+  Subscript, Superscript, Table, TableCellPropertiesEditing, TablePropertiesEditing,
   TableToolbar, TextTransformation,
   type Editor as CKEditor, type EditorConfig
 } from 'ckeditor5'
 import AssetBrowser from './assetbrowser.js'
 import LinkBrowser from './linkbrowser.js'
 import TableClassProperties from './tableproperties.js'
+import TableCellPropertiesTrimmedUI from './tablecellproperties.js'
 import { htmlSupport } from './htmlsupport.js'
 import 'ckeditor5/ckeditor5.css'
 import './editor.css'
@@ -71,10 +73,12 @@ export default class Editor extends ClassicEditor {
     Subscript,
     Superscript,
     Table,
-    // stock inline-style table/cell round-trip fidelity. Table properties is
-    // editing-only: TableClassProperties supplies the tableProperties toolbar
-    // component (the class-based balloon) in place of stock TablePropertiesUI.
-    TableCellProperties,
+    // stock inline-style table/cell round-trip fidelity. Both are editing-only:
+    // TableClassProperties supplies the tableProperties toolbar component (the
+    // class-based balloon) in place of stock TablePropertiesUI, and
+    // TableCellPropertiesTrimmedUI the tableCellProperties one.
+    TableCellPropertiesTrimmedUI,
+    TableCellPropertiesEditing,
     TableClassProperties,
     TablePropertiesEditing,
     TableToolbar,
@@ -185,7 +189,10 @@ export default class Editor extends ClassicEditor {
         defaultProperties: { borderStyle: 'dotted', borderWidth: '1234px', borderColor: 'hsl(135, 66%, 33%)' }
       },
       tableCellProperties: {
-        defaultProperties: { borderStyle: 'dotted', borderWidth: '1234px', borderColor: 'hsl(135, 66%, 33%)' }
+        defaultProperties: { borderStyle: 'dotted', borderWidth: '1234px', borderColor: 'hsl(135, 66%, 33%)' },
+        // cell backgrounds come from the palette (the host's templateColors),
+        // not a free-form picker
+        colorPicker: false
       }
     },
     htmlSupport: {

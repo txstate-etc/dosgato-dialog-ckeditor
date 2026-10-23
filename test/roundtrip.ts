@@ -1,13 +1,33 @@
-import type { Editor as CKEditor } from 'ckeditor5'
+import type { Editor as CKEditor, EditorConfig } from 'ckeditor5'
 import { resolveStoredHtml } from '../src/lib/storage'
 
 let editor: CKEditor | undefined
 
-export async function createEditor () {
+// What dosgato-txstate's templates pass (api/src/templates/defaults.ts), so
+// header-color-* classes in production content survive like they do there.
+// Without a palette the editor strips them, see tableproperties.ts.
+export const productionConfig: EditorConfig = {
+  table: {
+    tableProperties: {
+      tableHeaderColors: [
+        { label: 'None', value: 'header-color-none' },
+        { label: 'Default (Gold)', value: 'header-color-gold', default: true },
+        { label: 'Maroon', value: 'header-color-maroon' },
+        { label: 'Charcoal', value: 'header-color-charcoal' },
+        { label: 'Deep Blue', value: 'header-color-blue' },
+        { label: 'River', value: 'header-color-river' },
+        { label: 'Sandstone', value: 'header-color-sandstone' },
+        { label: 'Old Gold', value: 'header-color-oldgold' }
+      ]
+    }
+  }
+}
+
+export async function createEditor (config: EditorConfig = productionConfig) {
   if (editor) { try { await editor.destroy() } catch {} }
   const Editor = (await import('../src/lib/editor')).default
   document.body.innerHTML = '<div id="editor"></div>'
-  editor = await Editor.create(document.getElementById('editor')!, {})
+  editor = await Editor.create(document.getElementById('editor')!, config)
   return editor
 }
 

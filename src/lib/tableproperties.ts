@@ -4,9 +4,10 @@
  * upstream's TableProperties styles tables with inline CSS, DosGato records
  * semantics as CSS classes on the `<figure class="table">` wrapper — width
  * (`full-width`/`auto-width`), `border`, `alternate-row-color` and
- * `header-color-*` — so sites can restyle content without touching it. Header
- * row/column choices map to the stock `headingRows`/`headingColumns` model
- * attributes.
+ * `header-color-*` — so sites can restyle content without touching it. The
+ * form also offers stock TablePropertiesEditing's alignment, which already
+ * writes classes (`table-style-align-*`). Header rows and columns are left to
+ * the stock row/column toolbar dropdowns.
  *
  * The classes live in a `class` attribute on the model table (like the 35.4
  * fork), upcast from the wrapping figure when there is one, else from the
@@ -18,9 +19,7 @@
  */
 import {
   ButtonView, Command, ContextualBalloon, IconTableProperties, Plugin, clickOutsideHandler,
-  _getBalloonTablePositionData, _getHorizontallyOverlappingTableCells, _getTableWidgetAncestor,
-  _getVerticallyOverlappingTableCells, _repositionTableContextualBalloon,
-  _splitTableCellHorizontally, _splitTableCellVertically,
+  _getBalloonTablePositionData, _getTableWidgetAncestor, _repositionTableContextualBalloon,
   type Batch, type Editor, type ModelDocumentSelection, type ModelElement, type ViewElement
 } from 'ckeditor5'
 import TablePropertiesView, { type TableClassOption, type TableClassPropertiesConfig } from './tablepropertiesview.js'
@@ -31,7 +30,6 @@ import TablePropertiesView, { type TableClassOption, type TableClassPropertiesCo
 declare module '@ckeditor/ckeditor5-table' {
   interface TablePropertiesConfig {
     tableWidth?: TableClassOption[]
-    tableHeaders?: TableClassOption[]
     tableHeaderColors?: TableClassOption[]
   }
 }
@@ -42,15 +40,38 @@ interface TablePropertyCommandOptions {
   batch?: Batch
 }
 
-// View property -> command name. Ours except tableWidthClass, renamed because
-// stock TablePropertiesEditing already registers an (inline-style) tableWidth.
+// View property -> command name. Ours except tableAlignment, which is stock
+// TablePropertiesEditing's, and tableWidthClass, renamed because stock already
+// registers an (inline-style) tableWidth.
 const propertyToCommandMap = {
-  tableHeaders: 'tableHeaders',
   tableHeaderColors: 'tableHeaderColors',
   tableWidth: 'tableWidthClass',
+  tableAlignment: 'tableAlignment',
   tableBorder: 'tableBorder',
   tableAltBGColor: 'tableAltBGColor'
 } as const
+
+// Black or white text for a header background, whichever reads better. Colors
+// it can't parse (named colors, var()) get the editor's text color.
+function contrastingText (background: string) {
+  const hex = /^#([\da-f]{3}|[\da-f]{6})$/i.exec(background.trim())?.[1]
+  if (!hex) return 'inherit'
+  const full = hex.length === 3 ? hex.replace(/./g, '$&$&') : hex
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16))
+  return 0.299 * r + 0.587 * g + 0.114 * b > 150 ? '#000' : '#fff'
+}
+
+// nothing but empty paragraphs, whitespace (nbsp included) and line breaks,
+// the same rule dosgato-render uses for the corner
+function isBlankCell (cell: ModelElement) {
+  for (const block of cell.getChildren()) {
+    if (!block.is('element', 'paragraph')) return false
+    for (const child of block.getChildren()) {
+      if (child.is('$text') ? /\S/.test(child.data) : !child.is('element', 'softBreak')) return false
+    }
+  }
+  return true
+}
 
 function getSelectionAffectedTable (selection: ModelDocumentSelection): ModelElement | null {
   const selectedElement = selection.getSelectedElement()
@@ -67,15 +88,19 @@ function getClasses (table: ModelElement | null) {
 /**
  * Manages one group of mutually exclusive classes (or a single toggled class)
  * inside the model table's `class` attribute. `value` reflects which of the
- * group's classes the selected table currently has.
+ * group's classes the selected table currently has. The option marked default
+ * is how the site renders a table with none of the group's classes, so picking
+ * it clears the group instead of writing its class.
  */
 class TableClassCommand extends Command {
   declare value: string
   readonly values: string[]
+  readonly defaultValue?: string
 
   constructor (editor: Editor, values: TableClassOption[] | string | undefined) {
     super(editor)
     this.values = typeof values === 'string' ? [values] : (values ?? []).map(v => v.value)
+    if (typeof values !== 'string') this.defaultValue = values?.find(v => v.default)?.value
   }
 
   override refresh () {
@@ -86,7 +111,8 @@ class TableClassCommand extends Command {
   }
 
   override execute (options: TablePropertyCommandOptions = {}) {
-    const { value = '', oldValue, batch } = options
+    const { oldValue, batch } = options
+    const value = options.value === this.defaultValue ? '' : (options.value ?? '')
     const model = this.editor.model
     const table = getSelectionAffectedTable(model.document.selection)
     if (!table) return
@@ -106,65 +132,9 @@ class TableClassCommand extends Command {
   }
 }
 
-/**
- * Sets headers to exactly none/first row/first column/both. Unlike stock
- * setTableRowHeader (which extends the heading section to the selected row),
- * this always toggles just the first row/column — splitting any
- * rowspan/colspan cells the new boundary would cut through, same as stock
- * does. Goes through TableUtils.setHeading*Count because 48's scopedHeaders
- * feature derives headingRows/headingColumns from per-cell tableCellType
- * attributes via a post-fixer: a bare headingRows write on a table of plain
- * td cells gets immediately reverted.
- */
-class TableHeadersCommand extends Command {
-  declare value: string
-
-  override refresh () {
-    const table = getSelectionAffectedTable(this.editor.model.document.selection)
-    this.isEnabled = !!table
-    if (!table) return
-
-    const rows = table.getAttribute('headingRows') as number | undefined
-    const columns = table.getAttribute('headingColumns') as number | undefined
-    this.value = rows && columns ? 'both' : rows ? 'row' : columns ? 'column' : 'none'
-  }
-
-  override execute (options: TablePropertyCommandOptions = {}) {
-    const { value, batch } = options
-    if (!value || value === this.value) return
-
-    const model = this.editor.model
-    const tableUtils = this.editor.plugins.get('TableUtils')
-    const table = getSelectionAffectedTable(model.document.selection)
-    if (!table) return
-
-    const headingColumnsToSet = ['both', 'column'].includes(value) ? 1 : 0
-    const headingRowsToSet = ['both', 'row'].includes(value) ? 1 : 0
-    const currentHeadingRows = (table.getAttribute('headingRows') as number | undefined) ?? 0
-
-    model.enqueueChange(batch ?? model.createBatch(), writer => {
-      if (headingColumnsToSet) {
-        for (const { cell, column } of _getHorizontallyOverlappingTableCells(table, headingColumnsToSet)) {
-          _splitTableCellVertically(cell, column, headingColumnsToSet, writer)
-        }
-      }
-
-      if (headingRowsToSet) {
-        const startRow = headingRowsToSet > currentHeadingRows ? currentHeadingRows : 0
-        for (const { cell } of _getVerticallyOverlappingTableCells(table, headingRowsToSet, startRow)) {
-          _splitTableCellHorizontally(cell, headingRowsToSet, writer)
-        }
-      }
-
-      tableUtils.setHeadingColumnsCount(writer, table, headingColumnsToSet)
-      tableUtils.setHeadingRowsCount(writer, table, headingRowsToSet)
-    })
-  }
-}
-
 export default class TableClassProperties extends Plugin {
   static get requires () {
-    return [ContextualBalloon, 'TableEditing'] as const
+    return [ContextualBalloon, 'TableEditing', 'TablePropertiesEditing'] as const
   }
 
   static get pluginName () {
@@ -176,6 +146,10 @@ export default class TableClassProperties extends Plugin {
   protected _undoStepBatch!: Batch
   protected tableProperties!: TableClassPropertiesConfig
   protected _defaultValues!: Record<string, string>
+  protected _previewStyle?: HTMLStyleElement
+  // false while the form is being filled from the selected table, so the
+  // fill's own change events don't execute commands
+  protected _isReady = false
 
   init () {
     const editor = this.editor
@@ -183,14 +157,17 @@ export default class TableClassProperties extends Plugin {
 
     this._balloon = editor.plugins.get(ContextualBalloon)
     this.tableProperties = editor.config.get('table.tableProperties') ?? {}
-    // first option of each dropdown doubles as its default, so the initial
-    // form fill doesn't count as a change
+    // What the form shows for a table with none of a group's classes: the
+    // option marked default (how the site renders a classless table), else the
+    // first.
     this._defaultValues = Object.fromEntries(
-      (['tableHeaders', 'tableHeaderColors', 'tableWidth'] as const)
-        .map(key => [key, this.tableProperties[key]?.[0]?.value ?? ''])
+      (['tableHeaderColors', 'tableWidth'] as const).map(key => {
+        const options = this.tableProperties[key] ?? []
+        return [key, (options.find(o => o.default) ?? options[0])?.value ?? '']
+      })
     )
+    this._defaultValues.tableAlignment = 'center'
 
-    editor.commands.add('tableHeaders', new TableHeadersCommand(editor))
     editor.commands.add('tableHeaderColors', new TableClassCommand(editor, this.tableProperties.tableHeaderColors))
     editor.commands.add('tableWidthClass', new TableClassCommand(editor, this.tableProperties.tableWidth))
     editor.commands.add('tableBorder', new TableClassCommand(editor, 'border'))
@@ -241,6 +218,9 @@ export default class TableClassProperties extends Plugin {
           classes = [...viewTable.getClassNames()].filter(c => c !== 'table')
           if (classes.length && viewTable.getAttribute('border') === '1') classes.push('border')
         }
+        // header-color-* classes are the host's palette; without one they're
+        // meaningless, and there's no dropdown to take them off again
+        if (!this.tableProperties.tableHeaderColors?.length) classes = classes.filter(c => !c.startsWith('header-color-'))
         if (classes.length) conversionApi.writer.setAttribute('class', classes.join(' '), data.modelRange)
 
         // Keep the legacy border attribute verbatim (htmlBorder in the model).
@@ -275,15 +255,74 @@ export default class TableClassProperties extends Plugin {
         icon: IconTableProperties,
         tooltip: true
       })
-      view.bind('isEnabled').to(editor.commands.get('tableHeaders')!, 'isEnabled')
+      view.bind('isEnabled').to(editor.commands.get('tableBorder')!, 'isEnabled')
       this.listenTo(view, 'execute', () => { this._showView() })
       return view
     })
+
+    this._addHeaderColorPreview()
+
+    // After the editing downcast (which runs on the same event at low
+    // priority), so cells it just re-rendered get the class back.
+    this.listenTo(editor.model.document, 'change:data', () => { this._markEmptyCorners() }, { priority: 'lowest' })
+    editor.on('ready', () => { this._markEmptyCorners() })
+  }
+
+  protected _markedCorners = new Set<ViewElement>()
+
+  /**
+   * An empty top-left cell in a table with both a header row and a header
+   * column is a `th` labeling nothing, which accessibility checkers flag;
+   * dosgato-render turns it into a `td` when rendering. Mark it in the editing
+   * view (never in data) so editor.css can show it the way the site will: as
+   * a plain cell, without the header background.
+   */
+  protected _markEmptyCorners () {
+    const editor = this.editor
+    const corners = new Set<ViewElement>()
+    for (const root of editor.model.document.getRoots()) {
+      for (const item of editor.model.createRangeIn(root).getItems()) {
+        if (!item.is('element', 'table')) continue
+        if (!item.getAttribute('headingRows') || !item.getAttribute('headingColumns')) continue
+        const firstRow = item.getChild(0)
+        const corner = firstRow?.is('element', 'tableRow') ? firstRow.getChild(0) : undefined
+        if (!corner?.is('element', 'tableCell') || !isBlankCell(corner)) continue
+        const viewCell = editor.editing.mapper.toViewElement(corner)
+        if (viewCell) corners.add(viewCell)
+      }
+    }
+    editor.editing.view.change(writer => {
+      for (const el of this._markedCorners) if (!corners.has(el)) writer.removeClass('dg-table-corner', el)
+      for (const el of corners) writer.addClass('dg-table-corner', el)
+    })
+    this._markedCorners = corners
   }
 
   override destroy () {
     super.destroy()
     this.view?.destroy()
+    this._previewStyle?.remove()
+  }
+
+  /**
+   * Header color classes only mean something to the site's CSS, which the
+   * editor doesn't load. Hosts can give each option the color its header cells
+   * get on the site, and the editing view previews it (editor.css covers the
+   * other classes, which don't depend on the site palette).
+   */
+  protected _addHeaderColorPreview () {
+    const rules = (this.tableProperties.tableHeaderColors ?? [])
+      .filter(o => o.color && /^[\w-]+$/.test(o.value))
+      .map(o => {
+        // the default is also what a table with no header color class gets
+        const tables = [`figure.table.${o.value}`, ...(o.default ? ['figure.table:not([class*="header-color-"])'] : [])]
+        const selector = tables.map(t => `.ck.ck-editor__editable ${t} > table th`).join(', ')
+        return `${selector} { background: ${o.color}; color: ${contrastingText(o.color!)}; }`
+      })
+    if (!rules.length) return
+    this._previewStyle = document.createElement('style')
+    this._previewStyle.textContent = rules.join('\n')
+    document.head.appendChild(this._previewStyle)
   }
 
   get _isViewVisible () {
@@ -319,8 +358,7 @@ export default class TableClassProperties extends Plugin {
 
     for (const property of Object.keys(propertyToCommandMap) as (keyof typeof propertyToCommandMap)[]) {
       view.on<any>(`change:${property}`, (evt: unknown, propertyName: string, newValue: string, oldValue: string) => {
-        // ignore the initial form fill landing on the default value
-        if (!oldValue && this._defaultValues[property] === newValue) return
+        if (!this._isReady) return
         editor.execute(propertyToCommandMap[property], {
           value: newValue,
           oldValue,
@@ -334,10 +372,12 @@ export default class TableClassProperties extends Plugin {
 
   protected _fillViewFormFromCommandValues () {
     const commands = this.editor.commands
+    this._isReady = false
     for (const [property, commandName] of Object.entries(propertyToCommandMap)) {
       const value = (commands.get(commandName)!.value as string) || this._defaultValues[property] || ''
       this.view!.set(property as any, value)
     }
+    this._isReady = true
   }
 
   protected _showView () {
@@ -362,6 +402,7 @@ export default class TableClassProperties extends Plugin {
   protected _hideView () {
     const editor = this.editor
     this.stopListening(editor.ui, 'update')
+    this._isReady = false
     // move focus out of the form before detaching it from the DOM
     this.view!.saveButtonView.focus()
     this._balloon.remove(this.view!)

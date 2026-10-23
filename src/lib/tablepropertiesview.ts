@@ -2,9 +2,10 @@
  * The balloon form for DosGato's class-based table properties (see
  * tableproperties.ts for the feature itself). Ported from the dosgato-ckeditor
  * fork's Table/TablePropertiesView, rebuilt on public `ckeditor5` UI
- * primitives: two dropdowns (headers, header colors), a width dropdown and two
- * toggle buttons (border, alternating row background), all bound to observable
- * string properties that tableproperties.ts syncs with its commands.
+ * primitives: width, alignment and header color dropdowns and two toggle
+ * buttons (border, alternating row background), all bound to observable string
+ * properties that tableproperties.ts syncs with its commands. Header rows and
+ * columns are left to the stock row/column toolbar dropdowns.
  */
 import {
   ButtonView, Collection, FocusCycler, FocusTracker, FormHeaderView, FormRowView,
@@ -16,22 +17,41 @@ import {
 export interface TableClassOption {
   label: string
   value: string
+  /**
+   * What a table without any of the group's classes looks like on the site.
+   * The form shows it for such tables, and picking it clears the group's
+   * classes rather than writing its own.
+   */
   default?: boolean
+  /**
+   * Header colors only: the background the site gives this class's header
+   * cells, so the editor can preview it (see tableproperties.ts).
+   */
+  color?: string
 }
 
 /** The dropdown/toggle config hosts provide under `table.tableProperties`. */
 export interface TableClassPropertiesConfig {
   tableWidth?: TableClassOption[]
-  tableHeaders?: TableClassOption[]
   tableHeaderColors?: TableClassOption[]
 }
 
-type DropdownKey = 'tableHeaders' | 'tableHeaderColors' | 'tableWidth'
+// Stock tableAlignment values (TablePropertiesEditing, which writes them as
+// table-style-align-* classes). Center is its default and is never written.
+// The block-align values stock also knows are left out: nothing produces them
+// in DosGato content, and floats are what the old align attribute meant.
+const alignmentOptions: TableClassOption[] = [
+  { label: 'Center', value: 'center' },
+  { label: 'Left, text wraps', value: 'left' },
+  { label: 'Right, text wraps', value: 'right' }
+]
+
+type DropdownKey = 'tableHeaderColors' | 'tableWidth' | 'tableAlignment'
 
 export default class TablePropertiesView extends View {
-  declare tableHeaders: string
   declare tableHeaderColors: string
   declare tableWidth: string
+  declare tableAlignment: string
   declare tableBorder: string
   declare tableAltBGColor: string
 
@@ -41,9 +61,9 @@ export default class TablePropertiesView extends View {
   children: ViewCollection
   saveButtonView: ButtonView
   cancelButtonView: ButtonView
-  headersDropdownView: LabeledFieldView
   headerColorsDropdownView: LabeledFieldView
   widthDropdownView: LabeledFieldView
+  alignmentDropdownView: LabeledFieldView
   borderButtonView: ButtonView
   altBGButtonView: ButtonView
   protected readonly _focusables = new ViewCollection<FocusableView>()
@@ -53,22 +73,21 @@ export default class TablePropertiesView extends View {
     super(locale)
 
     this.set({
-      tableHeaders: '',
       tableHeaderColors: '',
       tableWidth: '',
+      tableAlignment: '',
       tableBorder: '',
       tableAltBGColor: ''
     })
 
     this.options = {
       tableWidth: options.tableWidth ?? [],
-      tableHeaders: options.tableHeaders ?? [],
       tableHeaderColors: options.tableHeaderColors ?? []
     }
 
-    this.headersDropdownView = this._createDropdown('tableHeaders', 'Headers', this.options.tableHeaders)
-    this.headerColorsDropdownView = this._createDropdown('tableHeaderColors', 'Header Colors', this.options.tableHeaderColors)
     this.widthDropdownView = this._createDropdown('tableWidth', 'Table Width', this.options.tableWidth)
+    this.alignmentDropdownView = this._createDropdown('tableAlignment', 'Alignment', alignmentOptions)
+    this.headerColorsDropdownView = this._createDropdown('tableHeaderColors', 'Header Color', this.options.tableHeaderColors)
 
     const { borderButtonView, altBGButtonView } = this._createToggleButtons()
     this.borderButtonView = borderButtonView
@@ -91,13 +110,16 @@ export default class TablePropertiesView extends View {
     this.children = this.createCollection()
     this.children.add(new FormHeaderView(locale, { label: this.t!('Table Properties') }))
     this.children.add(new FormRowView(locale, {
-      children: [this.headersDropdownView, this.headerColorsDropdownView],
+      children: [this.widthDropdownView, this.alignmentDropdownView],
       class: 'ck-table-form__border-row'
     }))
-    this.children.add(new FormRowView(locale, {
-      children: [this.widthDropdownView],
-      class: 'ck-table-form__border-row'
-    }))
+    // header colors are entirely the host's palette; no palette, no dropdown
+    if (this.options.tableHeaderColors.length) {
+      this.children.add(new FormRowView(locale, {
+        children: [this.headerColorsDropdownView],
+        class: 'ck-table-form__border-row'
+      }))
+    }
     this.children.add(new FormRowView(locale, {
       children: [this.borderButtonView, this.altBGButtonView],
       class: 'ck-table-form__border-row'
@@ -115,21 +137,6 @@ export default class TablePropertiesView extends View {
       },
       children: this.children
     })
-
-    // Keep the two header dropdowns consistent: "no headers" forces the "none"
-    // color, and picking headers again while the color is "none" restores the
-    // default color.
-    this.on('change:tableHeaders', (evt, name, newValue: string) => {
-      const colors = this.options.tableHeaderColors
-      if (newValue.includes('none')) {
-        const none = colors.find(({ label, value }) => value.toLowerCase().includes('none') || label.toLowerCase().includes('none'))
-        this.tableHeaderColors = none?.value ?? ''
-      } else if (this.tableHeaderColors.includes('none')) {
-        const defaultColor = colors.find(({ label, value, default: d }) => d || value.toLowerCase().includes('default') || label.toLowerCase().includes('default'))
-        if (defaultColor) this.tableHeaderColors = defaultColor.value
-        else if (colors.length) this.tableHeaderColors = colors[0].value
-      }
-    })
   }
 
   override render () {
@@ -139,9 +146,9 @@ export default class TablePropertiesView extends View {
     submitHandler({ view: this })
 
     for (const view of [
-      this.headersDropdownView,
-      this.headerColorsDropdownView,
       this.widthDropdownView,
+      this.alignmentDropdownView,
+      ...(this.options.tableHeaderColors.length ? [this.headerColorsDropdownView] : []),
       this.borderButtonView,
       this.altBGButtonView,
       this.saveButtonView,

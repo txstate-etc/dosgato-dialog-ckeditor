@@ -43,6 +43,11 @@
   }
 
   const templateProperties = {
+    tableHeaderColors: [
+      { label: 'None', value: 'header-color-none' },
+      { label: 'Default (Gold)', value: 'header-color-gold', default: true, color: '#ffb81c' },
+      { label: 'Maroon', value: 'header-color-maroon', color: '#501214' }
+    ],
     fontFamilies: ['"Comic Sans MS", "Comic Sans", cursive'],
     headingOptions: [
       { title: 'Paragraph', model: 'paragraph', class: 'ck-heading_paragraph' },

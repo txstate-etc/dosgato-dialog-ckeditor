@@ -8,7 +8,13 @@ export interface RichTextConfig {
 export interface ColorClasses {
   label: string
   value: string
+  /** the site's color for headers without a class; picking it clears the class */
   default?: boolean
+  /**
+   * the header background the site's CSS gives this class, for the editor's
+   * preview; defaults to the templateColors entry with the same label
+   */
+  color?: string
 }
 
 interface Colors {
@@ -29,14 +35,6 @@ export interface TemplateProperties {
     converterPriority?: string
   }[]
 }
-
-// Header colors are class names the site's CSS styles, so without a site
-// palette offer only no header color vs the site's default one. Font and cell
-// background colors fall back to CKEditor's stock palette.
-const defaultHeaderColors: ColorClasses[] = [
-  { label: 'None', value: 'header-color-none' },
-  { label: 'Default', value: 'header-color-default', default: true }
-]
 
 const listConfig = {
   list: {
@@ -117,12 +115,6 @@ export const defaultConfig: RichTextConfig = {
       tableWidth: [
         { label: '100%', value: 'full-width' },
         { label: 'Auto', value: 'auto-width' }
-      ],
-      tableHeaders: [
-        { label: 'None', value: 'none' },
-        { label: 'First Row', value: 'row' },
-        { label: 'First Column', value: 'column' },
-        { label: 'Both', value: 'both' }
       ]
     }
   },
@@ -203,6 +195,15 @@ export const tiConfig: RichTextConfig = {
   ...headingConfig
 }
 
+// The editor previews header colors when each entry has a `color`. Hosts
+// usually don't pass one, but their cell background palette names the same
+// colors: "Maroon" there is "Maroon" here, and "Default (Gold)" is "Gold".
+function withPreviewColors (headerColors: ColorClasses[], templateColors: Colors[] = []) {
+  const key = (label: string) => (/\(([^)]+)\)/.exec(label)?.[1] ?? label).trim().toLowerCase()
+  const byLabel = new Map(templateColors.map(c => [key(c.label), c.color]))
+  return headerColors.map(c => c.color ? c : { ...c, color: byLabel.get(key(c.label)) })
+}
+
 export function getConfig (configType: ConfigType, options: TemplateProperties) {
   let config: RichTextConfig
   if (!configType) config = defaultConfig
@@ -246,7 +247,10 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
   if (configType === 'ti') return config
 
   if (options.templateColors) config.table.tableCellProperties = { backgroundColors: options.templateColors }
-  config.table.tableProperties.tableHeaderColors = options.tableHeaderColors ?? defaultHeaderColors
+  // Header colors are class names only the site's CSS knows, so there's no
+  // fallback palette: without one, the table form has no header color dropdown
+  // (font and cell background colors fall back to CKEditor's stock palette)
+  if (options.tableHeaderColors?.length) config.table.tableProperties.tableHeaderColors = withPreviewColors(options.tableHeaderColors, options.templateColors)
 
   return config
 }

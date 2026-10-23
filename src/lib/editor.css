@@ -35,3 +35,48 @@ figure.image + figure.image.image-style-align-right, figure.image + figure.image
 .ck.ck-link-form .ck.ck-form__row.dg-link-form-save {
   justify-content: flex-end;
 }
+
+/*
+ * Editing-view preview of DosGato's table classes (tableproperties.ts), after
+ * dosgato-txstate's richEditorTable mixin. Stock content CSS draws every table
+ * the same, so without these the form's choices had no visible effect. Header
+ * color classes get a stand-in here; hosts that pass a `color` per option get
+ * the real color (tableproperties.ts injects those rules). Leading .ck to beat
+ * the specificity of stock's cell rules.
+ */
+.ck.ck-editor__editable figure.table:not(.auto-width) {
+  display: block;
+}
+.ck.ck-editor__editable figure.table:not(.border) > table {
+  border: none;
+}
+/* no border on the site; a faint guide so editors can still see the cells */
+.ck.ck-editor__editable figure.table:not(.border) > table :is(td, th) {
+  border: 1px dashed #d9d9d9;
+}
+.ck.ck-editor__editable figure.table.header-color-none > table th {
+  background: transparent;
+}
+.ck.ck-editor__editable figure.table.alternate-row-color > table > tbody > tr:nth-child(odd) {
+  background: #f2f2f2;
+}
+
+/* tablecellproperties.ts: the stock cell properties form, background and text alignment only */
+.ck.ck-table-cell-properties-form.dg-table-cell-properties-trimmed :is(
+  .ck-table-form__border-row,
+  .ck-table-form__cell-type-row,
+  .ck-form__row:has(> .ck-table-form__dimensions-row)
+) {
+  display: none;
+}
+/* empty top-left cell of a two-header table, rendered as a td on the site
+   (tableproperties.ts); doubled class to beat the injected header colors */
+.ck.ck-editor__editable figure.table > table th.dg-table-corner.dg-table-corner {
+  background: transparent;
+  color: inherit;
+}
+/* its margin is the gap beside the (hidden) cell type field; without that
+   field it just indents Background against the alignment row below */
+.ck.ck-table-cell-properties-form.dg-table-cell-properties-trimmed .ck-form__row.ck-table-form__background-row {
+  margin-inline-start: 0;
+}
