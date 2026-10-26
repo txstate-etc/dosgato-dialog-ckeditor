@@ -168,6 +168,11 @@ export default class Editor extends ClassicEditor {
         'linkImage'
       ]
     },
+    // font colors come from the palette (the host's definitionColors), not a
+    // free-form picker; hosts' fontColor config merges over this
+    fontColor: {
+      colorPicker: false
+    },
     list: {
       // 48 marks <li>s whose whole content is bold/colored/etc. with
       // ck-list-marker-* classes (plus --ck-content-list-marker-* styles) so
