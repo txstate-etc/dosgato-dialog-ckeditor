@@ -43,6 +43,16 @@
   }
 
   const templateProperties = {
+    definitionColors: ['#222222', '#501214', '#6a5638', '#363534', '#b30e1b'],
+    templateColors: [
+      { label: 'Maroon', color: '#501214' },
+      { label: 'Gold', color: '#6A5638' },
+      { label: 'Charcoal', color: '#363534' },
+      { label: 'Deep Blue', color: '#005481' },
+      { label: 'River', color: '#8BAEA1' },
+      { label: 'Sandstone', color: '#E8E3DB' },
+      { label: 'Old Gold', color: '#DEB407' }
+    ],
     tableHeaderColors: [
       { label: 'None', value: 'header-color-none' },
       { label: 'Default (Gold)', value: 'header-color-gold', default: true, color: '#ffb81c' },

@@ -216,7 +216,9 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
 
   if (configType === 'min' || configType === 'minwithlist') return config
 
-  if (options.definitionColors) config.fontColor = { colors: options.definitionColors }
+  // 49's stock grid is 12 wide to fit its 120-color palette; host palettes are
+  // 5-7 colors, so keep 48's 5 columns for them (columns also sets documentColors)
+  if (options.definitionColors) config.fontColor = { colors: options.definitionColors, columns: 5 }
 
   if (options.fontFamilies?.length) {
     config.fontFamily = {
@@ -246,7 +248,7 @@ export function getConfig (configType: ConfigType, options: TemplateProperties) 
 
   if (configType === 'ti') return config
 
-  if (options.templateColors) config.table.tableCellProperties = { backgroundColors: options.templateColors }
+  if (options.templateColors) config.table.tableCellProperties = { backgroundColors: options.templateColors, colorGridColumns: 5 }
   // Header colors are class names only the site's CSS knows, so there's no
   // fallback palette: without one, the table form has no header color dropdown
   // (font and cell background colors fall back to CKEditor's stock palette)

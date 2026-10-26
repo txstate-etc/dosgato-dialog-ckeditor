@@ -2,8 +2,11 @@
 
 ## 2.1.0
 
-- `strictHtml` now loads only the features behind the visible toolbar items (including the image and table toolbars when their insert buttons are visible), so content no visible tool could produce is dropped on load. It used to drop only GeneralHtmlSupport, so a `min` editor still kept tables, headings, images, and font colors from existing or pasted content.
+- CKEditor 48 → 49. Stored content round-trips the same as on 48 (all samples unchanged). The editor UI picks up CKEditor's refreshed theme. When `definitionColors` or `templateColors` aren't passed, the font and cell background fallback is now CKEditor's new 120-color palette in a 12-column grid; host palettes keep the old 5-column grid. CKEditor now ships ES2023 code and stylesheets with native CSS nesting, so the host's bundler targets need to allow both.
 
+## 2.0.1
+
+- `strictHtml` now loads only the features behind the visible toolbar items (including the image and table toolbars when their insert buttons are visible), so content no visible tool could produce is dropped on load. It used to drop only GeneralHtmlSupport, so a `min` editor still kept tables, headings, images, and font colors from existing or pasted content.
 ## 2.0.0
 
 CKEditor 35 → 48. The editor used to come prebuilt from `@dosgato/ckeditor`; it's now built in this package from the `ckeditor5` package, with stock plugins wherever they exist. `FieldRichText`'s props are unchanged apart from the new `strictHtml`, but there are a few things to know before upgrading a host.
