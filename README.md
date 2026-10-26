@@ -29,7 +29,7 @@ configType?: 'full' | 'min' | 'minwithlist' | 'ti' // preset toolbar, defaults t
 templateProperties?: TemplateProperties // site palettes, fonts, and headings, see below
 config?: EditorConfig // raw CKEditor config, spread over the preset; reach for templateProperties first
 compact?: boolean // shorter editor, defaults to true when maxlength is unset or under 400
-strictHtml?: boolean // drop GeneralHtmlSupport, so only markup a real editor feature understands survives
+strictHtml?: boolean // load only the features the visible toolbars use, so only markup they can produce survives
 editor?: ClassicEditor // bind:editor if you need the instance
 ```
 

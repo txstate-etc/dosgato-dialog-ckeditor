@@ -7,7 +7,7 @@
   import RichTextEditor from './RichTextEditor.svelte'
   import type { ConfigType, TemplateProperties } from './RichTextTypes'
   import { resolveStoredHtml } from './storage'
-  import { getParserElement, getUrl } from './util'
+  import { getParserElement, getUrl, isSourceEditing } from './util'
 
   export let id: string | undefined = undefined
   export let path: string
@@ -21,7 +21,7 @@
   export let helptext: string | undefined = undefined
   export let editor: ClassicEditor | undefined = undefined
   export let compact: boolean = !maxlength || maxlength < 400
-  /** Drop GeneralHtmlSupport so only markup a dedicated editor feature understands survives. */
+  /** Load only the features the visible toolbars use, so only markup they can produce survives. */
   export let strictHtml = false
 
   const chooserClient = getContext<Client>(CHOOSER_API_CONTEXT)
@@ -49,7 +49,7 @@
     // typing in the source view doesn't touch the model, so the store is stale until something
     // calls getData(), which flushes the source textarea into the model first (and so fires the
     // change:data that syncs the store)
-    if ((editor?.plugins.get('SourceEditing') as any)?.isSourceEditingMode) data = editor!.getData()
+    if (isSourceEditing(editor)) data = editor!.getData()
     const testEl = getParserElement()
     testEl.innerHTML = nullableSerialize(data)
     const links = testEl.querySelectorAll('[href]')

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `strictHtml` now loads only the features behind the visible toolbar items (including the image and table toolbars when their insert buttons are visible), so content no visible tool could produce is dropped on load. It used to drop only GeneralHtmlSupport, so a `min` editor still kept tables, headings, images, and font colors from existing or pasted content.
+
 ## 2.0.0
 
 CKEditor 35 → 48. The editor used to come prebuilt from `@dosgato/ckeditor`; it's now built in this package from the `ckeditor5` package, with stock plugins wherever they exist. `FieldRichText`'s props are unchanged apart from the new `strictHtml`, but there are a few things to know before upgrading a host.

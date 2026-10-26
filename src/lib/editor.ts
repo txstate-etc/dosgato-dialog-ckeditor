@@ -7,14 +7,14 @@
  * dynamically so the editor stays code-split.
  */
 import {
-  Alignment, Autoformat, BlockQuote, Bold, Bookmark, ClassicEditor, Code, Essentials, Font,
-  GeneralHtmlSupport, Heading, HorizontalLine, Image, ImageCaption, ImageResize,
+  Alignment, Autoformat, BlockQuote, Bold, Bookmark, ClassicEditor, Code, Essentials,
+  FontBackgroundColor, FontColor, FontFamily, FontSize, GeneralHtmlSupport, Heading, HorizontalLine, Image, ImageCaption, ImageResize,
   ImageStyle, ImageTextAlternative, ImageToolbar, Indent, IndentBlock, Italic,
   Link, LinkImage, List, ListProperties, Paragraph, PasteFromOffice, RemoveFormat,
   SourceEditing, SpecialCharacters, SpecialCharactersEssentials, Strikethrough,
   Subscript, Superscript, Table, TableCellPropertiesEditing, TablePropertiesEditing,
   TableToolbar, TextTransformation,
-  type Editor as CKEditor, type EditorConfig
+  type Editor as CKEditor, type EditorConfig, type PluginConstructor
 } from 'ckeditor5'
 import AssetBrowser from './assetbrowser.js'
 import LinkBrowser from './linkbrowser.js'
@@ -44,7 +44,12 @@ export default class Editor extends ClassicEditor {
     Bookmark,
     Code,
     Essentials,
-    Font,
+    // the parts of Font, listed separately so strictHtml can drop the ones
+    // without a toolbar item
+    FontBackgroundColor,
+    FontColor,
+    FontFamily,
+    FontSize,
     GeneralHtmlSupport,
     Heading,
     HorizontalLine,
@@ -204,4 +209,90 @@ export default class Editor extends ClassicEditor {
       allow: htmlSupport
     }
   }
+}
+
+// What strictHtml keeps no matter the toolbar: typing, undo, paragraphs, and
+// helpers that only act through features that are loaded.
+const alwaysLoaded: PluginConstructor[] = [Autoformat, Essentials, OmitListItemIds, Paragraph, PasteFromOffice, TextTransformation]
+
+// The plugins behind each toolbar item (main toolbar, image toolbar, table
+// content toolbar). Their requirements are kept too, see strictRemovePlugins.
+const toolbarPlugins: Record<string, PluginConstructor[]> = {
+  alignment: [Alignment],
+  assetBrowserImage: [AssetBrowser, Image, ImageResize, ImageToolbar],
+  blockQuote: [BlockQuote],
+  bold: [Bold],
+  bookmark: [Bookmark],
+  bulletedList: [List],
+  code: [Code],
+  fontBackgroundColor: [FontBackgroundColor],
+  fontColor: [FontColor],
+  fontFamily: [FontFamily],
+  fontSize: [FontSize],
+  heading: [Heading],
+  horizontalLine: [HorizontalLine],
+  imageStyle: [ImageStyle],
+  imageTextAlternative: [ImageTextAlternative],
+  indent: [Indent, IndentBlock],
+  // the resize handles show on every image
+  insertImage: [AssetBrowser, Image, ImageResize, ImageToolbar],
+  imageInsert: [AssetBrowser, Image, ImageResize, ImageToolbar],
+  insertTable: [Table, TableToolbar],
+  italic: [Italic],
+  link: [Link, LinkBrowser],
+  linkImage: [LinkImage, LinkBrowser],
+  numberedList: [List, ListProperties],
+  outdent: [Indent, IndentBlock],
+  removeFormat: [RemoveFormat],
+  sourceEditing: [SourceEditing],
+  specialCharacters: [SpecialCharacters, SpecialCharactersEssentials],
+  strikethrough: [Strikethrough],
+  subscript: [Subscript],
+  superscript: [Superscript],
+  tableCellProperties: [TableCellPropertiesTrimmedUI, TableCellPropertiesEditing],
+  tableProperties: [TableClassProperties, TablePropertiesEditing],
+  toggleImageCaption: [ImageCaption]
+}
+
+type ToolbarItem = string | { items?: ToolbarItem[] }
+
+function* toolbarItems (items: ToolbarItem[] | { items?: ToolbarItem[] } | undefined): Generator<string> {
+  for (const item of (Array.isArray(items) ? items : items?.items) ?? []) {
+    // imageStyle:wrapText and friends all come from ImageStyle
+    if (typeof item === 'string') yield item.split(':')[0]
+    else yield* toolbarItems(item.items)
+  }
+}
+
+/**
+ * For strictHtml: the builtin plugins that no visible toolbar item needs, to
+ * pass as removePlugins. Without them their markup is dropped from content
+ * too, so the editor only holds what its toolbars can produce. That includes
+ * GeneralHtmlSupport, which no toolbar item needs. The image and table
+ * toolbars count only when their insert button is visible. Toolbar items with
+ * no entry in toolbarPlugins keep nothing loaded.
+ */
+export function strictRemovePlugins (config: EditorConfig) {
+  const items = new Set(toolbarItems(config.toolbar ?? Editor.defaultConfig.toolbar))
+  if (items.has('insertImage') || items.has('imageInsert') || items.has('assetBrowserImage')) {
+    for (const item of toolbarItems(config.image?.toolbar ?? Editor.defaultConfig.image!.toolbar)) items.add(item)
+  }
+  if (items.has('insertTable')) {
+    for (const item of toolbarItems(config.table?.contentToolbar ?? Editor.defaultConfig.table!.contentToolbar)) items.add(item)
+  }
+  const byName = new Map(Editor.builtinPlugins.map(p => [(p as { pluginName?: string }).pluginName, p]))
+  const keep = new Set<PluginConstructor>()
+  // removing a plugin something else requires fails editor creation
+  const visit = (plugin: PluginConstructor | undefined) => {
+    if (!plugin || keep.has(plugin)) return
+    keep.add(plugin)
+    for (const required of (plugin as { requires?: (PluginConstructor | string)[] }).requires ?? []) {
+      visit(typeof required === 'string' ? byName.get(required) : required)
+    }
+  }
+  for (const plugin of alwaysLoaded) visit(plugin)
+  // a host's own plugins may build on builtin ones
+  for (const plugin of config.extraPlugins ?? []) visit(plugin)
+  for (const item of items) for (const plugin of toolbarPlugins[item] ?? []) visit(plugin)
+  return Editor.builtinPlugins.filter(p => !keep.has(p))
 }

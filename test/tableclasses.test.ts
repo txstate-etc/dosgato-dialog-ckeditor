@@ -65,8 +65,8 @@ test('an empty corner of a two-header table is marked in the editing view only',
 
   // typing into the corner makes it a real header again
   editor.model.change(writer => {
-    const corner = editor.model.document.getRoot()!.getNodeByPath([0, 0, 0, 0])!
-    writer.insertText('Course', corner as any, 0)
+    const corner = editor.model.document.getRoot()!.getNodeByPath([0, 0, 0, 0])
+    writer.insertText('Course', corner, 0)
   })
   expect(markedCorners()).toBe(0)
 })

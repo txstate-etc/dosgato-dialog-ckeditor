@@ -5,7 +5,7 @@
   import { FORM_CONTEXT, FORM_INHERITED_PATH, nullableDeserialize, nullableSerialize, type FormStore } from '@txstate-mws/svelte-forms'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { type Cache, isNotBlank, randomid } from 'txstate-utils'
-  import { getParserElement } from './util'
+  import { getParserElement, isSourceEditing } from './util'
   import { type TemplateProperties, type ConfigType, getConfig } from './RichTextTypes'
 
   export let id: string | undefined = undefined
@@ -18,7 +18,7 @@
   export let findByUrlCache: Cache<string, AnyItem | undefined>
   export let editor: ClassicEditor | undefined = undefined
   export let compact = false
-  /** Drop GeneralHtmlSupport so only markup a dedicated editor feature understands survives. */
+  /** Load only the features the visible toolbars use, so only markup they can produce survives. */
   export let strictHtml = false
 
   const formStore = getContext<FormStore>(FORM_CONTEXT)
@@ -43,12 +43,12 @@
   let sourceFlushTimer: ReturnType<typeof setTimeout> | undefined
   onMount(async () => {
     mounted = true
-    const Editor = (await import('./editor.js')).default
+    const { default: Editor, strictRemovePlugins } = await import('./editor.js')
+    const merged = { ...presetConfig, ...config }
     try {
       editor = await Editor.create(element, {
-        ...presetConfig,
-        ...config,
-        removePlugins: [...(config?.removePlugins ?? []), ...(strictHtml ? ['GeneralHtmlSupport'] : [])],
+        ...merged,
+        removePlugins: [...(config?.removePlugins ?? []), ...(strictHtml ? strictRemovePlugins(merged) : [])],
         assetBrowser: {
           browseImage: async (imageUrl: string | undefined, next: (imageUrl: string) => void) => {
             const item = imageUrl ? await findByUrlCache.get(imageUrl) : undefined
@@ -84,12 +84,11 @@
     })
     // typing in the source view only updates its textarea, so change:data stays quiet until
     // source mode is left; getData() flushes the textarea into the model, which fires it
-    const sourceEditing = editor.plugins.get('SourceEditing') as any
     editor.ui.element!.addEventListener('input', () => {
-      if (!sourceEditing?.isSourceEditingMode) return
+      if (!isSourceEditing(editor)) return
       clearTimeout(sourceFlushTimer)
       sourceFlushTimer = setTimeout(() => {
-        if (!destroyed && sourceEditing.isSourceEditingMode) editor!.getData()
+        if (!destroyed && isSourceEditing(editor)) editor!.getData()
       }, 300)
     })
     reactToValue()
@@ -176,7 +175,7 @@
       charlength = 0
     }
     if (skipReaction) return
-    if (editor && !(editor.plugins.get('SourceEditing') as any)?.isSourceEditingMode && editor.getData() !== serialized) {
+    if (editor && !isSourceEditing(editor) && editor.getData() !== serialized) {
       editor.setData(serialized)
     }
   }
