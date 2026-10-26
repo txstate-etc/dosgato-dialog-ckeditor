@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.1.0
 
 - `strictHtml` now loads only the features behind the visible toolbar items (including the image and table toolbars when their insert buttons are visible), so content no visible tool could produce is dropped on load. It used to drop only GeneralHtmlSupport, so a `min` editor still kept tables, headings, images, and font colors from existing or pasted content.
 
