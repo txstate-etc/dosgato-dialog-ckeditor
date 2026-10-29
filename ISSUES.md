@@ -20,14 +20,6 @@ One wrinkle: a list built from the saved page will include the anchors in the co
 
 The editor-side work is small. The real work is in dosgato-admin: implementing `getAnchors` on `ChooserClient` by collecting anchor names from the other components on the page.
 
-## Phone links lost their helper in the CKEditor 48 upgrade
-
-The old link form had a type dropdown (URL / email / phone / anchor) that prefixed the protocol for you. The 48 upgrade dropped it: stock CKEditor now auto-prefixes `mailto:` when you type an email, and `https://` on bare domains via `link.defaultProtocol`, and anchors are picked from the Bookmarks list — but there is no `tel:` detection anywhere in the link package, so a user creating a phone link has to know to type `tel:512-245-1111` themselves.
-
-If this generates complaints, [linkbrowser.ts](src/lib/linkbrowser.ts) already owns the link form and could rewrite the field on submit: a high-priority listener on the form's `submit` event that sees a digits-and-punctuation-only value and prefixes `tel:` before LinkUI reads it. Maybe ten lines. It's a heuristic, but a value like `512-245-1111` is never anything else in practice.
-
-
-
 ## SourceEditing checks are cast to any
 
 Both [RichTextEditor.svelte](src/lib/RichTextEditor.svelte) and [FieldRichText.svelte](src/lib/FieldRichText.svelte) do `(editor.plugins.get('SourceEditing') as any)?.isSourceEditingMode`. `plugins.get` by string name returns a bare `Plugin`, which doesn't know about `isSourceEditingMode`. Now that types come from `ckeditor5` itself, `plugins.get('SourceEditing')` is typed through its `PluginsMap` augmentation and the casts could go. The catch is that `plugins.get` throws when the plugin isn't loaded, so if a host's `config.removePlugins` ever drops SourceEditing these calls would need an `editor.plugins.has('SourceEditing')` guard rather than the `?.` they lean on today.

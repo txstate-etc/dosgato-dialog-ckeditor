@@ -1,13 +1,46 @@
 import { ButtonView, ContextualBalloon, FormRowView, Plugin, type LinkFormView, type ViewCollection } from 'ckeditor5'
 
 /**
+ * `tel:` href for a value that is only a phone number: digits with common
+ * separators (space . - parentheses), optionally a leading +, 7 to 15 digits
+ * (E.164 caps at 15), then an optional extension (x123, ext. 123,
+ * extension 123) which becomes RFC 3966's ;ext=123. Spaces become dashes since
+ * RFC 3966 only allows - . ( ) as visual separators. Anything else, including
+ * values that already have a protocol, returns undefined.
+ */
+export function phoneToTel (value: string) {
+  const m = /^(\+?[\d\s().-]+?)(?:[\s,]*(?:x|ext\.?|extension)\s*(\d+))?$/i.exec(value.trim())
+  if (!m) return undefined
+  const number = m[1].trim()
+  const digits = number.replace(/\D/g, '').length
+  if (digits < 7 || digits > 15) return undefined
+  return 'tel:' + number.replace(/\s+/g, '-') + (m[2] ? ';ext=' + m[2] : '')
+}
+
+/**
+ * Corrections to a URL typed into the link form, made before stock adds its
+ * own protocol: phone numbers become tel: links (see phoneToTel), and a
+ * protocol-less URL with a / before its first @ gets `defaultProtocol`, since
+ * stock's email check would otherwise take www.threads.net/@texas.state for an
+ * address and make it mailto:. Returns undefined when stock can handle it.
+ */
+export function fixTypedLink (value: string, defaultProtocol = 'https://') {
+  const tel = phoneToTel(value)
+  if (tel) return tel
+  const trimmed = value.trim()
+  if (/^(?!\w+:)\w[^@]*\/[^@]*@/.test(trimmed)) return defaultProtocol + trimmed
+  return undefined
+}
+
+/**
  * Adds a "Browse pages & assets" button to the stock link form, wired to the
  * host's `config.assetBrowser.browseLink(currentUrl, cb)` (see assetbrowser.ts
  * for the contract). Replaces the old dosgato-ckeditor Link/ fork: 48.x's
  * revamped LinkUI has no sanctioned hook for a modal browser (its
  * registerLinksListProvider only renders static link lists), so we decorate
  * the lazily-created form view instead — still far smaller than re-subclassing
- * LinkUI and its form views.
+ * LinkUI and its form views. Also corrects typed URLs (see fixTypedLink),
+ * with or without the browse hook.
  */
 export default class LinkBrowser extends Plugin {
   static get requires () {
@@ -21,7 +54,6 @@ export default class LinkBrowser extends Plugin {
   afterInit () {
     const editor = this.editor
     const config = editor.config.get('assetBrowser')
-    if (!config?.browseLink) return
     const balloon = editor.plugins.get(ContextualBalloon)
     // LinkUI builds its form view lazily on first show, so watch the balloon
     // and decorate the form the first time it appears.
@@ -31,8 +63,22 @@ export default class LinkBrowser extends Plugin {
       const formView = linkUI.formView
       if (decorated || !formView || balloon.visibleView !== formView) return
       decorated = true
-      this._addBrowseButton(formView)
+      this._addTypedLinkFixes(formView)
+      if (config?.browseLink) this._addBrowseButton(formView)
     })
+  }
+
+  /**
+   * Apply fixTypedLink before LinkUI's own submit listener reads the field.
+   */
+  _addTypedLinkFixes (formView: LinkFormView) {
+    const defaultProtocol = this.editor.config.get('link.defaultProtocol')
+    this.listenTo(formView, 'submit', () => {
+      const input = formView.urlInputView.fieldView.element
+      if (!input) return
+      const fixed = fixTypedLink(input.value, defaultProtocol)
+      if (fixed) input.value = fixed
+    }, { priority: 'high' })
   }
 
   _addBrowseButton (formView: LinkFormView) {

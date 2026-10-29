@@ -3,6 +3,8 @@
 ## Unreleased
 
 - CKEditor's Bookmark feature is labeled "Anchor" throughout the editor UI again (toolbar button, form, link form list, messages), matching the 1.x name. Only the wording changed; the toolbar name in custom `config` is still `bookmark`, and stored content is unaffected.
+- Phone numbers typed into the link form become `tel:` links (`512.245.5555`, `(512) 245-5555`, `+44 20 7946 0958`: digits with spaces, dots, dashes or parentheses, optional leading `+`, 7 to 15 digits), with an optional extension (`x123`, `ext. 123`, `extension 123`) stored as `;ext=123`. Spaces become dashes in the href (`tel:` links can't contain spaces). Bare numbers used to get `https://`, and `+` numbers were stored as-is. Emails already got `mailto:`.
+- A URL typed without `https://` that has an `@` handle after a `/`, like `www.threads.net/@texas.state`, now gets `https://`. CKEditor's email check used to take it for an address and make it a `mailto:` link.
 
 ## 2.1.0
 
