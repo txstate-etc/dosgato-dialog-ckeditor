@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- CKEditor's Bookmark feature is labeled "Anchor" throughout the editor UI again (toolbar button, form, link form list, messages), matching the 1.x name. Only the wording changed; the toolbar name in custom `config` is still `bookmark`, and stored content is unaffected.
+
 ## 2.1.0
 
 - CKEditor 48 → 49. Stored content round-trips the same as on 48 (all samples unchanged). The editor UI picks up CKEditor's refreshed theme. When `definitionColors` or `templateColors` aren't passed, the font and cell background fallback is now CKEditor's new 120-color palette in a 12-column grid; host palettes keep the old 5-column grid. CKEditor now ships ES2023 code and stylesheets with native CSS nesting, so the host's bundler targets need to allow both.

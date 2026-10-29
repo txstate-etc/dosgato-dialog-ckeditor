@@ -93,6 +93,27 @@ export default class Editor extends ClassicEditor {
   static override defaultConfig: EditorConfig = {
     licenseKey: 'GPL',
     language: 'en',
+    // Our editors know these as anchors (the old fork's name and the HTML
+    // term); stock Bookmark's UI strings are renamed, its behavior untouched
+    translations: {
+      en: {
+        dictionary: {
+          Bookmark: 'Anchor',
+          Bookmarks: 'Anchors',
+          'Bookmark name': 'Anchor name',
+          'Enter the bookmark name without spaces.': 'Enter the anchor name without spaces.',
+          'Bookmark toolbar': 'Anchor toolbar',
+          'bookmark widget': 'anchor widget',
+          'Scroll to bookmark': 'Scroll to anchor',
+          'No bookmarks available.': 'No anchors available.',
+          'Edit bookmark': 'Edit anchor',
+          'Remove bookmark': 'Remove anchor',
+          'Bookmark must not be empty.': 'Anchor must not be empty.',
+          'Bookmark name cannot contain space characters.': 'Anchor name cannot contain space characters.',
+          'Bookmark name already exists.': 'Anchor name already exists.'
+        }
+      }
+    },
     link: {
       // bare domains typed into the link form (www.txstate.edu) get a real
       // protocol; emails get mailto: automatically regardless of this setting
